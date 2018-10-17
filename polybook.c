@@ -4,6 +4,7 @@
 
 #include "defs.h"
 #include "polykeys.h"
+#include "string.h"
 
 typedef struct {
     U64 key;
@@ -14,7 +15,7 @@ typedef struct {
 } S_POLY_BOOK_ENTRY;
 
 long NumEntries = 0;
-char bookName[50] = "performance.bin";
+char bookName[50] = "bookfish.bin";
 
 S_POLY_BOOK_ENTRY *entries;
 
@@ -25,11 +26,12 @@ const int PolyKindOfPiece[13] = {
 void InitPolyBook() {
 
     EngineOptions->UseBook = FALSE;
+    //strcpy(EngineOptions->BookName,"bookfish.bin");
 
-    FILE *pFile = fopen(bookName,"rb");
+    FILE *pFile = fopen(EngineOptions->BookName,"rb");
 
     if(pFile == NULL) {
-        printf("Book File Not Read\n");
+        printf("Book File Not Read\n\n");
     } else {
         fseek(pFile,0,SEEK_END);
         long position = ftell(pFile);
@@ -47,7 +49,7 @@ void InitPolyBook() {
 
         size_t returnValue;
         returnValue = fread(entries, sizeof(S_POLY_BOOK_ENTRY), NumEntries, pFile);
-        printf("%ld Entries read in from opening book %s\n", returnValue, bookName);
+        printf("%ld Entries read in from opening book %s\n\n", returnValue, EngineOptions->BookName);
 
         if(NumEntries > 0) {
             EngineOptions->UseBook = TRUE;

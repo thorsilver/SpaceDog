@@ -157,6 +157,7 @@ typedef struct {
 
 typedef struct {
     int UseBook;
+    char BookName[50];
 } S_OPTIONS;
 
 /* GAME MOVE */

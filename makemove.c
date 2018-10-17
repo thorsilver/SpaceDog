@@ -259,8 +259,9 @@ int MakeMove(S_BOARD *pos, int move) {
         TakeMove(pos);
         return FALSE;
     }
-
+    //printf("Material Total: %d",pos->material[WHITE] + pos->material[BLACK] - 100000);
     return TRUE;
+
 
 }
 

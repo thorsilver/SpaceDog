@@ -255,7 +255,7 @@ int MaterialDraw(const S_BOARD *pos) {
     return FALSE;
 }
 
-#define ENDGAME_MAT (1 * PieceVal[wR] + 2 * PieceVal[wN] + 2 * PieceVal[wP] + PieceVal[wK])
+//#define ENDGAME_MAT (1 * PieceVal[wR] + 2 * PieceVal[wN] + 2 * PieceVal[wP] + PieceVal[wK])
 
 int EvalPosition(const S_BOARD *pos) {
 
@@ -264,6 +264,7 @@ int EvalPosition(const S_BOARD *pos) {
     int pce;
     int pceNum;
     int sq;
+    int total_material = pos->material[WHITE] + pos->material[BLACK] - 100000;
     int score = pos->material[WHITE] - pos->material[BLACK];
 
     if(!pos->pceNum[wP] && !pos->pceNum[bP] && MaterialDraw(pos) == TRUE) {
@@ -401,7 +402,8 @@ int EvalPosition(const S_BOARD *pos) {
     ASSERT(SqOnBoard(sq));
     ASSERT(SQ64(sq)>=0 && SQ64(sq)<=63);
 
-    if( (pos->material[BLACK] <= ENDGAME_MAT) ) {
+    //if( (pos->material[BLACK] <= ENDGAME_MAT) ) {
+    if( (total_material <= 2500) ) {
         score += KingE[SQ64(sq)];
     } else {
         score += KingO[SQ64(sq)];
@@ -412,7 +414,8 @@ int EvalPosition(const S_BOARD *pos) {
     ASSERT(SqOnBoard(sq));
     ASSERT(MIRROR64(SQ64(sq))>=0 && MIRROR64(SQ64(sq))<=63);
 
-    if( (pos->material[WHITE] <= ENDGAME_MAT) ) {
+    //if( (pos->material[WHITE] <= ENDGAME_MAT) ) {
+    if( (total_material <= 2500) ) {
         score -= KingE[MIRROR64(SQ64(sq))];
     } else {
         score -= KingO[MIRROR64(SQ64(sq))];

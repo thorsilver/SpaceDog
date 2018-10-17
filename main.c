@@ -38,14 +38,33 @@ int main(int argc, char *argv[]) {
 
     int ArgNum = 0;
 
-    for(ArgNum = 0; ArgNum < argc; ++ArgNum) {
+
+    // Parsing command line arguments
+    if(argc==1){
+        strcpy(EngineOptions->BookName, "bookfish.bin");
+        printf("Using default opening book: BookFish!\n\n");
+    } else if(argc==2){
+        if(strncmp(argv[1], "NoBook", 6) == 0) {
+            EngineOptions->UseBook = FALSE;
+            printf("Opening Book Off!\n\n");
+        }
+    } else if(argc==3) {
+        if(strncmp(argv[1], "BookName", 8) == 0) {
+            strcpy(EngineOptions->BookName, argv[2]);
+            printf("USING OPENING BOOK: %s\n\n",EngineOptions->BookName);
+        }
+    }
+
+    InitPolyBook();
+
+    /*for(ArgNum = 0; ArgNum < argc; ++ArgNum) {
         if(strncmp(argv[ArgNum], "NoBook", 6) == 0) {
             EngineOptions->UseBook = FALSE;
             printf("Opening Book Off!");
         }
-    }
+    }*/
 
-    printf("Welcome to SpaceDog! Type 'dog' to play in console mode. \n");
+    printf("Welcome to SpaceDog! Type 'dog' to play in console mode. \n\n");
     printf("SpaceDog > ");
 
     char line[256];
