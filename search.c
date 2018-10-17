@@ -228,6 +228,8 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
         }
     }
 
+    int FoundPV = FALSE;
+
     for(MoveNum = 0; MoveNum < list->count; ++MoveNum) {
 
         PickNextMove(MoveNum, list);
@@ -237,7 +239,18 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
         }
 
         Legal++;
-        Score = -AlphaBeta( -beta, -alpha, depth-1, pos, info, TRUE);
+
+        // PVS (Principal Variation Search)
+        if(FoundPV == TRUE){
+            Score = -AlphaBeta( -alpha - 1, -alpha, depth-1, pos, info, TRUE);
+            if (Score > alpha && Score < beta){
+                Score = -AlphaBeta( -beta, -alpha, depth-1, pos, info, TRUE);
+            }
+
+        } else {
+            Score = -AlphaBeta( -beta, -alpha, depth-1, pos, info, TRUE);
+        }
+
         TakeMove(pos);
 
         if(info->stopped == TRUE) {
@@ -262,6 +275,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
 
                     return beta;
                 }
+                FoundPV = TRUE;
                 alpha = Score;
 
                 if(!(list->moves[MoveNum].move & MFLAGCAP)) {
@@ -331,7 +345,7 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
             }
             if(info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
                 pvMoves = GetPvLine(currentDepth, pos);
-                if(!info->GAME_MODE == XBOARDMODE) {
+                if((!info->GAME_MODE) == XBOARDMODE) {
                     printf("pv");
                 }
                 for(pvNum = 0; pvNum < pvMoves; ++pvNum) {
@@ -351,7 +365,7 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
         printf("move %s\n",PrMove(bestMove));
         MakeMove(pos, bestMove);
     } else {
-        printf("\n\n***!! Vice makes move %s !!***\n\n",PrMove(bestMove));
+        printf("\n\n***!! SpaceDog makes move %s !!***\n\n",PrMove(bestMove));
         MakeMove(pos, bestMove);
         PrintBoard(pos);
     }
