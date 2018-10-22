@@ -234,6 +234,63 @@ int ParseFen(char *fen, S_BOARD *pos) {
     return 0;
 }
 
+const char *printSquare(const unsigned sq) {
+    static char result[3];
+    if (sq >= 120 || !SqOnBoard(sq))
+        return "-";
+    result[0] = 'a' + FilesBrd[SQ64(sq)];
+    result[1] = '1' + RanksBrd[SQ64(sq)];
+    result[2] = 0;
+    return result;
+}
+
+const char *printFEN(const S_BOARD *pos) {
+    int emptyCount = 0;
+    int strIndex = 0;
+    static char result[256];
+    for (int rank = RANK_8; rank >= RANK_1; rank--) {
+        for (int file = FILE_A; file <= FILE_H; file++) {
+            int sq120 = FR2SQ(file, rank);
+            int piece = pos->pieces[sq120];
+            if (piece == EMPTY) {
+                emptyCount++;
+            } else {
+                if (emptyCount != 0) {
+                    result[strIndex++] = '0' + emptyCount;
+                    emptyCount = 0;
+                }
+                result[strIndex++] = PceChar[piece];
+            }
+        }
+        if (emptyCount != 0) {
+            result[strIndex++] = '0' + emptyCount;
+            emptyCount = 0;
+        }
+        if (rank != RANK_1) {
+            result[strIndex++] = '/';
+        }
+    }
+    strIndex +=
+            sprintf(result + strIndex, " %c ", pos->side == WHITE ? 'w' : 'b');
+    if (pos->castlePerm == 0) {
+        result[strIndex++] = '-';
+    } else {
+        if (pos->castlePerm & WKCA)
+            result[strIndex++] = 'K';
+        if (pos->castlePerm & WQCA)
+            result[strIndex++] = 'Q';
+        if (pos->castlePerm & BKCA)
+            result[strIndex++] = 'k';
+        if (pos->castlePerm & BQCA)
+            result[strIndex++] = 'q';
+    }
+    // TODO: Check if pos->hisPly / 2 + 1 is the correct formula
+    strIndex += sprintf(result + strIndex, " %s %d %d", printSquare(pos->enPas),
+                        pos->fiftyMove, pos->hisPly / 2 + 1);
+    ASSERT(strIndex < 256);
+    return result;
+}
+
 void PrintBoard(const S_BOARD *pos) {
 
     int sq,file,rank,piece;
@@ -264,6 +321,9 @@ void PrintBoard(const S_BOARD *pos) {
            pos->castlePerm & BQCA ? 'q' : '-'
     );
     printf("PosKey:%llX\n",pos->posKey);
+    //char currentFEN = printFEN(pos);
+    printf("FEN: %s\n\n",printFEN(pos));
+    WriteFenLog(printFEN(pos));
 }
 
 void ResetBoard(S_BOARD *pos) {

@@ -250,6 +250,7 @@ void XBoard_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             move = ParseMove(inBuf+9, pos);
             if(move == NOMOVE) continue;
             MakeMove(pos, move);
+            checkresult(pos);
             pos->ply=0;
         }
     }
@@ -405,6 +406,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             continue;
         }
         MakeMove(pos, move);
+        checkresult(pos);
         pos->ply=0;
     }
 }

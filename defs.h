@@ -34,6 +34,7 @@ typedef unsigned long long U64;
 #define MAXDEPTH 64
 
 #define START_FEN  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define FEN_LOG_FILE "fens.txt"
 
 #define INFINITE 30000
 #define ISMATE (INFINITE - MAXDEPTH)
@@ -263,6 +264,8 @@ extern U64 GeneratePosKey(const S_BOARD *pos);
 // board.c
 extern int ParseFen(char *fen, S_BOARD *pos);
 extern void ResetBoard(S_BOARD *pos);
+extern const char *printSquare(const unsigned sq);
+extern const char *printFEN(const S_BOARD *pos);
 extern void PrintBoard(const S_BOARD *pos);
 extern void UpdateListsMaterial(S_BOARD *pos);
 extern int CheckBoard(const S_BOARD *pos);
@@ -276,6 +279,7 @@ extern char *PrSq(const int sq);
 extern char *PrMove(const int move);
 extern void PrintMoveList(const S_MOVELIST *list);
 extern int ParseMove(char *ptrChar, S_BOARD *pos);
+extern void WriteFenLog(char *fen);
 
 // validate.c
 extern int SqOnBoard(const int sq);

@@ -103,3 +103,13 @@ void PrintMoveList(const S_MOVELIST *list) {
     }
     printf("MoveList Total %d Moves:\n\n",list->count);
 }
+
+void WriteFenLog(char *fen) {
+    FILE *fp;
+
+    fp=fopen(FEN_LOG_FILE, "a");
+    if(fp == NULL)
+        exit(-1);
+    fprintf(fp, "%s\n", fen);
+    fclose(fp);
+}
