@@ -407,6 +407,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         }
         MakeMove(pos, move);
         checkresult(pos);
+        PrintBoard(pos);
         pos->ply=0;
     }
 }

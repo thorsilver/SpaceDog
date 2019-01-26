@@ -297,7 +297,7 @@ void PrintBoard(const S_BOARD *pos) {
 
     printf("\nGame Board:\n\n");
 
-    for(rank = RANK_8; rank >= RANK_1; rank--) {
+    /*for(rank = RANK_8; rank >= RANK_1; rank--) {
         printf("%d  ",rank+1);
         for(file = FILE_A; file <= FILE_H; file++) {
             sq = FR2SQ(file,rank);
@@ -305,11 +305,23 @@ void PrintBoard(const S_BOARD *pos) {
             printf("%3c",PceChar[piece]);
         }
         printf("\n");
-    }
+    }*/
 
-    printf("\n   ");
+
+    for(rank = RANK_8; rank >= RANK_1; rank--) {
+        printf("\t+---+---+---+---+---+---+---+---+\n");
+        printf("%d\t",rank+1);
+        for(file = FILE_A; file <= FILE_H; file++) {
+            sq = FR2SQ(file,rank);
+            piece = pos->pieces[sq];
+            printf("| %c ",PceChar[piece]);
+        }
+        printf("|\n");
+    }
+    printf("\t+---+---+---+---+---+---+---+---+\n");
+    printf("\n\t");
     for(file = FILE_A; file <= FILE_H; file++) {
-        printf("%3c",'a'+file);
+        printf("%3c ",'a'+file);
     }
     printf("\n\n");
     printf("side:%c\n",SideChar[pos->side]);
