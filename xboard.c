@@ -274,6 +274,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
     engineSide = BLACK;
     ParseFen(START_FEN, pos);
+    //InitTEX();
 
     while(TRUE) {
 
@@ -315,6 +316,8 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("time x - set thinking time to x seconds (depth still applies if set)\n");
             printf("view - show current depth and movetime settings\n");
             printf("setboard x - set position to fen x\n");
+            printf("texlog - write game record in TeX and initialise the file\n");
+            printf("endtex - write closing statement to TeX game record\n");
             printf("** note ** - to reset time and depth, set to 0\n");
             printf("enter moves using b7b8q notation\n\n\n");
             continue;
@@ -400,6 +403,17 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             continue;
         }
 
+        if(!strcmp(command, "texlog")) {
+            InitTEX();
+            EngineOptions->texLog = 1;
+            continue;
+        };
+
+        if(!strcmp(command, "endtex")) {
+            EndTEX();
+            continue;
+        }
+
         move = ParseMove(inBuf, pos);
         if(move == NOMOVE) {
             printf("Command unknown:%s\n",inBuf);
@@ -407,6 +421,10 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         }
         MakeMove(pos, move);
         checkresult(pos);
+        if(EngineOptions->texLog == 1) {
+            WriteMoveTEX(inBuf, pos->hisPly);
+        };
+        //WriteMoveTEX(inBuf, pos->hisPly);
         PrintBoard(pos);
         pos->ply=0;
     }

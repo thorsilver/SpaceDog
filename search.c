@@ -6,6 +6,7 @@
 
 #include "stdio.h"
 #include "defs.h"
+#include "string.h"
 
 
 int rootDepth;
@@ -354,6 +355,44 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
                 printf("\n");
             }
 
+            /*if(EngineOptions->texLog == 1) {
+                char buf[MAXDEPTH];
+                int i;
+                char c;
+                for(pvNum = 0; pvNum < pvMoves; ++pvNum) {
+                    snprintf(buf, MAXDEPTH, "%s ", PrMove(pos->PvArray[pvNum]));
+                };
+                FILE *fp;
+                fp=fopen(TEX_GAME_LOG,"a");
+                fprintf(fp, "\\emph{PV:} ");
+                for(i = 0; i < MAXDEPTH; i++) {
+                    c = buf[i];
+                    if(c == '\0') {
+                        continue;
+                    }
+                    else {
+                        fprintf(fp, "%c", buf[i]);
+                    };
+                };
+                fprintf(fp, "\n\n");
+                fclose(fp);
+            };*/
+
+            /*if(EngineOptions->texLog == 1) {
+                FILE *fp;
+                fp=fopen(TEX_GAME_LOG,"a");
+                pvMoves = GetPvLine(currentDepth, pos);
+                for(pvNum=0; pvNum < pvMoves; ++pvNum) {
+                    long curpos = ftell(fp);
+                    fprintf(fp, "\r\\emph{PV:} ");
+                    fprintf(fp, "%s ", PrMove(pos->PvArray[pvNum]));
+                    fseek(fp, curpos, SEEK_SET);
+                };
+                fseek(fp, 0, SEEK_END);
+                fprintf(fp, "\n\n");
+                fclose(fp);
+            };*/
+
             //printf("Hits:%d Overwrite:%d NewWrite:%d Cut:%d\nOrdering %.2f NullCut:%d\n",pos->HashTable->hit,pos->HashTable->overWrite,pos->HashTable->newWrite,pos->HashTable->cut,
             //(info->fhf/info->fh)*100,info->nullCut);
         }
@@ -367,6 +406,21 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
     } else {
         printf("\n\n***!! SpaceDog makes move %s !!***\n\n",PrMove(bestMove));
         MakeMove(pos, bestMove);
+        if(EngineOptions->texLog == 1) {
+            WriteMoveTEX(PrMove(bestMove), pos->hisPly);
+        };
+        /*if(EngineOptions->texLog == 1) {
+            char fullPV[50], nextMove[10];
+            for(pvNum = 0; pvNum < pvMoves; ++pvNum) {
+                strcpy(nextMove, PrMove(pos->PvArray[pvNum]));
+                strcat(fullPV, nextMove);
+            }
+            FILE *fp;
+            fopen(TEX_GAME_LOG, "a");
+            fprintf(fp, "\\emph{PV:} %s\n\n", fullPV);
+            fclose(fp);
+        };*/
+        //WriteMoveTEX(PrMove(bestMove), pos->hisPly);
         PrintBoard(pos);
     }
 

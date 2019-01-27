@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+//#include <jmorecfg.h>
 
 #define MAX_HASH 1024
 
@@ -35,6 +36,7 @@ typedef unsigned long long U64;
 
 #define START_FEN  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define FEN_LOG_FILE "fens.txt"
+#define TEX_GAME_LOG "game_record.tex"
 
 #define INFINITE 30000
 #define ISMATE (INFINITE - MAXDEPTH)
@@ -112,6 +114,8 @@ typedef struct {
 
     int castlePerm;
 
+    //int texLog;
+
     U64 posKey;
 
     int pceNum[13];
@@ -159,6 +163,7 @@ typedef struct {
 typedef struct {
     int UseBook;
     char BookName[50];
+    int texLog;
 } S_OPTIONS;
 
 /* GAME MOVE */
@@ -280,6 +285,10 @@ extern char *PrMove(const int move);
 extern void PrintMoveList(const S_MOVELIST *list);
 extern int ParseMove(char *ptrChar, S_BOARD *pos);
 extern void WriteFenLog(char *fen);
+extern void InitTEX();
+extern void WriteTEX(char *fen);
+extern void WriteMoveTEX(char *move, int ply);
+extern void EndTEX();
 
 // validate.c
 extern int SqOnBoard(const int sq);

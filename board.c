@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include "defs.h"
+#define SQOFFBOARD(sq) (FilesBrd[(sq)]==OFFBOARD)
 
 int CheckBoard(const S_BOARD *pos) {
 
@@ -235,13 +236,21 @@ int ParseFen(char *fen, S_BOARD *pos) {
 }
 
 const char *printSquare(const unsigned sq) {
-    static char result[3];
-    if (sq >= 120 || !SqOnBoard(sq))
+    //static char result[3];
+    if (sq >= 120 || SqOnBoard(sq) == 0)
         return "-";
-    result[0] = 'a' + FilesBrd[SQ64(sq)];
+    static char SqStr[3];
+
+    int file = FilesBrd[sq];
+    int rank = RanksBrd[sq];
+
+    sprintf(SqStr, "%c%c", ('a'+file), ('1'+rank));
+
+    return SqStr;
+    /*result[0] = 'a' + FilesBrd[SQ64(sq)];
     result[1] = '1' + RanksBrd[SQ64(sq)];
     result[2] = 0;
-    return result;
+    return result;*/
 }
 
 const char *printFEN(const S_BOARD *pos) {
@@ -325,7 +334,7 @@ void PrintBoard(const S_BOARD *pos) {
     }
     printf("\n\n");
     printf("side:%c\n",SideChar[pos->side]);
-    printf("enPas:%d\n",pos->enPas);
+    printf("enPas:%s\n", printSquare(pos->enPas));
     printf("castle:%c%c%c%c\n",
            pos->castlePerm & WKCA ? 'K' : '-',
            pos->castlePerm & WQCA ? 'Q' : '-',
@@ -336,6 +345,10 @@ void PrintBoard(const S_BOARD *pos) {
     //char currentFEN = printFEN(pos);
     printf("FEN: %s\n\n",printFEN(pos));
     WriteFenLog(printFEN(pos));
+    if(EngineOptions->texLog == 1) {
+        WriteTEX(printFEN(pos));
+    };
+    //WriteTEX(printFEN(pos));
 }
 
 void ResetBoard(S_BOARD *pos) {
