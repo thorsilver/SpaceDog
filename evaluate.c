@@ -135,6 +135,26 @@ const int nval_eg_wh[64] = { -31, -29, -27, -25, -25, -27, -29, -31,
                              -9,   4,  14,  20,  20,  14,   4,  -9,
                              -41, -29, -27, -15, -15, -27, -29, -41 };
 
+/* Knight Outpots */
+
+const int knight_outpost_bl[64] = { 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 1, 4, 4, 4, 4, 1, 0,
+                                    0, 2, 6, 8, 8, 6, 2, 0,
+                                    0, 1, 4, 4, 4, 4, 1, 0,   /* [black][sq] */
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0 };
+
+const int knight_outpost_wh[64] = { 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 1, 4, 4, 4, 4, 1, 0,
+                                    0, 2, 6, 8, 8, 6, 2, 0,   /* [white][sq] */
+                                    0, 1, 4, 4, 4, 4, 1, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0 };
+
 /* Bishop PSTs */
 
 const int bval_mg_bl[64] = {  0,   0,   0,   0,   0,   0,   0,   0,
@@ -172,6 +192,26 @@ const int bval_eg_wh[64] = {-15, -15, -15, -15, -15, -15, -15, -15,
                             0,   4,   8,   8,   8,   8,   4,   0,
                             0,   4,   4,   4,   4,   4,   4,   0,
                             0,   0,   0,   0,   0,   0,   0,   0};
+
+/* Bishop Outposts */
+
+const int bishop_outpost_bl[64] = { 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 1, 3, 3, 3, 3, 1, 0,
+                                    0, 3, 5, 5, 5, 5, 3, 0,
+                                    0, 1, 2, 2, 2, 2, 1, 0,   /* [black][sq] */
+                                    0, 0, 1, 1, 1, 1, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0 };
+
+const int bishop_outpost_wh[64] = { 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 1, 1, 1, 1, 0, 0,
+                                    0, 1, 2, 2, 2, 2, 1, 0,
+                                    0, 3, 5, 5, 5, 5, 3, 0,   /* [white][sq] */
+                                    0, 1, 3, 3, 3, 3, 1, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0 };
 
 /* Queen PSTs */
 
@@ -313,7 +353,13 @@ int EvalPosition(const S_BOARD *pos) {
         sq = pos->pList[pce][pceNum];
         ASSERT(SqOnBoard(sq));
         ASSERT(SQ64(sq)>=0 && SQ64(sq)<=63);
-        score += KnightTable[SQ64(sq)];
+        //score += KnightTable[SQ64(sq)];
+        if( (total_material <= 2500) ) {
+            score += nval_eg_wh[SQ64(sq)];
+        } else {
+            score += nval_mg_wh[SQ64(sq)];
+        }
+        score += knight_outpost_wh[SQ64(sq)];
     }
 
     pce = bN;
@@ -321,7 +367,13 @@ int EvalPosition(const S_BOARD *pos) {
         sq = pos->pList[pce][pceNum];
         ASSERT(SqOnBoard(sq));
         ASSERT(MIRROR64(SQ64(sq))>=0 && MIRROR64(SQ64(sq))<=63);
-        score -= KnightTable[MIRROR64(SQ64(sq))];
+        //score -= KnightTable[MIRROR64(SQ64(sq))];
+        if( (total_material <= 2500) ) {
+            score -= nval_eg_bl[SQ64(sq)];
+        } else {
+            score -= nval_mg_bl[SQ64(sq)];
+        }
+        score -= knight_outpost_bl[SQ64(sq)];
     }
 
     pce = wB;
@@ -329,7 +381,13 @@ int EvalPosition(const S_BOARD *pos) {
         sq = pos->pList[pce][pceNum];
         ASSERT(SqOnBoard(sq));
         ASSERT(SQ64(sq)>=0 && SQ64(sq)<=63);
-        score += BishopTable[SQ64(sq)];
+        //score += BishopTable[SQ64(sq)];
+        if( (total_material <= 2500) ) {
+            score += bval_eg_wh[SQ64(sq)];
+        } else {
+            score += bval_mg_wh[SQ64(sq)];
+        }
+        score += bishop_outpost_bl[SQ64(sq)];
     }
 
     pce = bB;
@@ -337,7 +395,13 @@ int EvalPosition(const S_BOARD *pos) {
         sq = pos->pList[pce][pceNum];
         ASSERT(SqOnBoard(sq));
         ASSERT(MIRROR64(SQ64(sq))>=0 && MIRROR64(SQ64(sq))<=63);
-        score -= BishopTable[MIRROR64(SQ64(sq))];
+        //score -= BishopTable[MIRROR64(SQ64(sq))];
+        if( (total_material <= 2500) ) {
+            score -= bval_eg_bl[SQ64(sq)];
+        } else {
+            score -= bval_mg_bl[SQ64(sq)];
+        }
+        score -= bishop_outpost_bl[SQ64(sq)];
     }
 
     pce = wR;
@@ -377,6 +441,11 @@ int EvalPosition(const S_BOARD *pos) {
         ASSERT(SqOnBoard(sq));
         ASSERT(SQ64(sq)>=0 && SQ64(sq)<=63);
         ASSERT(FileRankValid(FilesBrd[sq]));
+        if( (total_material <= 2500) ) {
+            score += qval_eg_wh[SQ64(sq)];
+        } else {
+            score += qval_mg_wh[SQ64(sq)];
+        }
         if(!(pos->pawns[BOTH] & FileBBMask[FilesBrd[sq]])) {
             score += QueenOpenFile;
         } else if(!(pos->pawns[WHITE] & FileBBMask[FilesBrd[sq]])) {
@@ -390,6 +459,11 @@ int EvalPosition(const S_BOARD *pos) {
         ASSERT(SqOnBoard(sq));
         ASSERT(SQ64(sq)>=0 && SQ64(sq)<=63);
         ASSERT(FileRankValid(FilesBrd[sq]));
+        if( (total_material <= 2500) ) {
+            score -= qval_eg_bl[SQ64(sq)];
+        } else {
+            score -= qval_mg_bl[SQ64(sq)];
+        }
         if(!(pos->pawns[BOTH] & FileBBMask[FilesBrd[sq]])) {
             score -= QueenOpenFile;
         } else if(!(pos->pawns[BLACK] & FileBBMask[FilesBrd[sq]])) {
