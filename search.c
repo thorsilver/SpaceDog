@@ -351,47 +351,14 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
                 }
                 for(pvNum = 0; pvNum < pvMoves; ++pvNum) {
                     printf(" %s",PrMove(pos->PvArray[pvNum]));
+                    /*if(EngineOptions->SanMode == 0) {
+                        printf(" %s",PrMove(pos->PvArray[pvNum]));
+                    } else {
+                        printf(" %s (%s) ", PrMove(pos->PvArray[pvNum]), PrMoveSAN(pos, pos->PvArray[pvNum]));
+                    }*/
                 }
                 printf("\n");
             }
-
-            /*if(EngineOptions->texLog == 1) {
-                char buf[MAXDEPTH];
-                int i;
-                char c;
-                for(pvNum = 0; pvNum < pvMoves; ++pvNum) {
-                    snprintf(buf, MAXDEPTH, "%s ", PrMove(pos->PvArray[pvNum]));
-                };
-                FILE *fp;
-                fp=fopen(TEX_GAME_LOG,"a");
-                fprintf(fp, "\\emph{PV:} ");
-                for(i = 0; i < MAXDEPTH; i++) {
-                    c = buf[i];
-                    if(c == '\0') {
-                        continue;
-                    }
-                    else {
-                        fprintf(fp, "%c", buf[i]);
-                    };
-                };
-                fprintf(fp, "\n\n");
-                fclose(fp);
-            };*/
-
-            /*if(EngineOptions->texLog == 1) {
-                FILE *fp;
-                fp=fopen(TEX_GAME_LOG,"a");
-                pvMoves = GetPvLine(currentDepth, pos);
-                for(pvNum=0; pvNum < pvMoves; ++pvNum) {
-                    long curpos = ftell(fp);
-                    fprintf(fp, "\r\\emph{PV:} ");
-                    fprintf(fp, "%s ", PrMove(pos->PvArray[pvNum]));
-                    fseek(fp, curpos, SEEK_SET);
-                };
-                fseek(fp, 0, SEEK_END);
-                fprintf(fp, "\n\n");
-                fclose(fp);
-            };*/
 
             //printf("Hits:%d Overwrite:%d NewWrite:%d Cut:%d\nOrdering %.2f NullCut:%d\n",pos->HashTable->hit,pos->HashTable->overWrite,pos->HashTable->newWrite,pos->HashTable->cut,
             //(info->fhf/info->fh)*100,info->nullCut);
@@ -405,6 +372,13 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
         MakeMove(pos, bestMove);
     } else {
         printf("\n\n***!! SpaceDog makes move %s !!***\n\n",PrMove(bestMove));
+        char *sanMove = PrMoveSAN(pos, bestMove);
+        if(EngineOptions->SanMode == 1) {
+            SanLog(sanMove, pos->side, pos->hisPly);
+        }
+        if(EngineOptions->summary == 1) {
+            GameSummary(sanMove, pos->side, pos->hisPly);
+        }
         MakeMove(pos, bestMove);
         if(EngineOptions->texLog == 1) {
             WriteMoveTEX(PrMove(bestMove), pos->hisPly);
@@ -422,6 +396,7 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
         };*/
         //WriteMoveTEX(PrMove(bestMove), pos->hisPly);
         PrintBoard(pos);
+        printf("Standard Algebraic Notation: %s\n", sanMove);
     }
 
 }

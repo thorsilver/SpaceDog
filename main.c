@@ -35,6 +35,8 @@ int main(int argc, char *argv[]) {
     InitHashTable(pos->HashTable, 64);
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
+    EngineOptions->SanMode = 0;
+    EngineOptions->summary = 0;
 
     int ArgNum = 0;
 

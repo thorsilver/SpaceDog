@@ -72,7 +72,7 @@ int checkresult(S_BOARD *pos) {
         if(pos->side == WHITE) {
             printf("0-1 {black mates (claimed by SpaceDog)}\n");return TRUE;
         } else {
-            printf("0-1 {white mates (claimed by SpaceDog)}\n");return TRUE;
+            printf("1-0 {white mates (claimed by SpaceDog)}\n");return TRUE;
         }
     } else {
         printf("\n1/2-1/2 {stalemate (claimed by SpaceDog)}\n");return TRUE;
@@ -274,6 +274,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
     engineSide = BLACK;
     ParseFen(START_FEN, pos);
+    //EngineOptions->SanMode = 1;
     //InitTEX();
 
     while(TRUE) {
@@ -317,7 +318,10 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("view - show current depth and movetime settings\n");
             printf("setboard x - set position to fen x\n");
             printf("texlog - write game record in TeX and initialise the file\n");
+            printf("pgnlog - write game record in PGN and initialise the file\n");
+            printf("startsum - start fancy summary file in TeX\n");
             printf("endtex - write closing statement to TeX game record\n");
+            printf("endsum - complete and close fancy summary in TeX\n");
             printf("** note ** - to reset time and depth, set to 0\n");
             printf("enter moves using b7b8q notation\n\n\n");
             continue;
@@ -409,8 +413,25 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             continue;
         };
 
+        if(!strcmp(command, "pgnlog")) {
+            InitSanLog();
+            EngineOptions->SanMode = 1;
+            continue;
+        };
+
+        if(!strcmp(command, "startsum")) {
+            InitSummary();
+            EngineOptions->summary = 1;
+            continue;
+        };
+
         if(!strcmp(command, "endtex")) {
             EndTEX();
+            continue;
+        }
+
+        if(!strcmp(command, "endsum")) {
+            EndSummary();
             continue;
         }
 
@@ -419,6 +440,13 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("Command unknown:%s\n",inBuf);
             continue;
         }
+        char *sanMove = PrMoveSAN(pos, move);
+        if(EngineOptions->SanMode == 1) {
+            SanLog(sanMove, pos->side, pos->hisPly);
+        }
+        if(EngineOptions->summary == 1) {
+            GameSummary(sanMove, pos->side, pos->hisPly);
+        }
         MakeMove(pos, move);
         checkresult(pos);
         if(EngineOptions->texLog == 1) {
@@ -426,6 +454,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         };
         //WriteMoveTEX(inBuf, pos->hisPly);
         PrintBoard(pos);
+        printf("Standard Algebraic Notation: %s\n\n", sanMove);
         pos->ply=0;
     }
 }
