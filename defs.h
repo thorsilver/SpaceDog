@@ -37,6 +37,8 @@ typedef unsigned long long U64;
 #define START_FEN  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define FEN_LOG_FILE "fens.txt"
 #define TEX_GAME_LOG "game_record.tex"
+#define SAN_GAME_LOG "game_record.pgn"
+#define SAN_SUMMARY "game_summary.tex"
 
 #define INFINITE 30000
 #define ISMATE (INFINITE - MAXDEPTH)
@@ -164,6 +166,8 @@ typedef struct {
     int UseBook;
     char BookName[50];
     int texLog;
+    int SanMode;
+    int summary;
 } S_OPTIONS;
 
 /* GAME MOVE */
@@ -282,12 +286,18 @@ extern int SqAttacked(const int sq, const int side, const S_BOARD *pos);
 // io.c
 extern char *PrSq(const int sq);
 extern char *PrMove(const int move);
+char *PrMoveSAN(S_BOARD *pos,  int move);
 extern void PrintMoveList(const S_MOVELIST *list);
 extern int ParseMove(char *ptrChar, S_BOARD *pos);
 extern void WriteFenLog(char *fen);
 extern void InitTEX();
+extern void InitSummary();
+extern void EndSummary();
 extern void WriteTEX(char *fen);
 extern void WriteMoveTEX(char *move, int ply);
+extern void InitSanLog();
+extern void SanLog(char *move, int sideToMove, int ply);
+extern void GameSummary(char *move, int sideToMove, int ply);
 extern void EndTEX();
 
 // validate.c
@@ -342,6 +352,9 @@ extern void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info);
 // xboard.c
 extern void XBoard_Loop(S_BOARD *pos, S_SEARCHINFO *info);
 extern void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info);
+extern int checkresult(S_BOARD *pos);
+extern int ThreeFoldRep(const S_BOARD *pos);
+extern int DrawMaterial(const S_BOARD *pos);
 
 // polybook.c
 extern void ListBookMoves(U64 polyKey);
