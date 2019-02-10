@@ -7,6 +7,8 @@
 #include "stdio.h"
 #include "defs.h"
 #include "string.h"
+#include "syzygy.h"
+#include "fathom/src/tbprobe.h"
 
 
 int rootDepth;
@@ -80,6 +82,7 @@ static void ClearForSearch(S_BOARD *pos, S_SEARCHINFO *info) {
 
     info->stopped = 0;
     info->nodes = 0;
+    info->tbhits = 0;
     info->fh = 0;
     info->fhf = 0;
 }
@@ -312,11 +315,36 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
     int currentDepth = 0;
     int pvMoves = 0;
     int pvNum = 0;
+    char *FEN;
 
     ClearForSearch(pos,info);
 
+    int materialTotal = 0;
+    int i;
+    for (i = 0; i < 13; i++) {
+        materialTotal += pos->pceNum[i];
+    }
+
+    printf("Material Total: %d\n", materialTotal);
+
     if(EngineOptions->UseBook == TRUE) {
         bestMove = GetBookMove(pos);
+    }
+
+    if(EngineOptions->use_TBs == 1 && materialTotal <= TB_LARGEST) {
+        FEN = printFEN(pos);
+        // FEN debug
+        //printf("Pre-TB Probe FEN: %s\n", FEN);
+        int testProbe;
+        //testProbe = probeRootTB(pos, FEN, currentDepth);
+        // testProbe debug
+        bestMove = probeRootDTZ(pos, FEN, currentDepth);
+        printf("TB Probe Outcome: %s\n", PrMove(bestMove));
+        /*if (testProbe != 0) {
+            bestMove = testProbe;
+            printf("Latest FEN: %s   TB Move: %s", FEN, PrMove(bestMove));
+            info->tbhits++;
+        }*/
     }
 
     //printf("Search depth:%d\n",info->depth);

@@ -4,6 +4,8 @@
 
 #include <stdlib.h>
 #include "defs.h"
+#include "fathom/src/tbprobe.h"
+//#include "syzygy.h"
 
 #define RAND_64 	((U64)rand() | \
 					(U64)rand() << 15 | \
@@ -180,6 +182,19 @@ void InitSq120To64() {
         }
     }
 }
+
+void InitTBs() {
+    if(EngineOptions->use_TBs == 1) {
+        tb_init(TB_PATH);
+        if (TB_LARGEST == 0) {
+            printf("error: unable to initialize tablebase; no tablebase "
+                   "files found\n");
+            exit(-1);
+        } else {
+            printf("Using Syzygy tablebases for %d pieces or less!\n", TB_LARGEST);
+        }
+    }
+};
 
 void AllInit() {
     InitSq120To64();

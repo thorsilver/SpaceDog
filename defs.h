@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <getopt.h>
 //#include <jmorecfg.h>
 
 #define MAX_HASH 1024
@@ -39,6 +41,7 @@ typedef unsigned long long U64;
 #define TEX_GAME_LOG "game_record.tex"
 #define SAN_GAME_LOG "game_record.pgn"
 #define SAN_SUMMARY "game_summary.tex"
+#define TB_PATH "syzygy/"
 
 #define INFINITE 30000
 #define ISMATE (INFINITE - MAXDEPTH)
@@ -149,6 +152,7 @@ typedef struct {
     int infinite;
 
     long nodes;
+    long tbhits;
 
     int quit;
     int stopped;
@@ -168,6 +172,8 @@ typedef struct {
     int texLog;
     int SanMode;
     int summary;
+    int use_TBs;
+    int TB_PROBE_DEPTH;
 } S_OPTIONS;
 
 /* GAME MOVE */
@@ -260,6 +266,7 @@ extern S_OPTIONS EngineOptions[1];
 // init.c
 extern void AllInit();
 extern void InitFilesRanksBrd();
+extern void InitTBs();
 
 
 // bitboards.c
@@ -289,6 +296,7 @@ extern char *PrMove(const int move);
 char *PrMoveSAN(S_BOARD *pos,  int move);
 extern void PrintMoveList(const S_MOVELIST *list);
 extern int ParseMove(char *ptrChar, S_BOARD *pos);
+extern int ParseMoveTB(char *ptrChar, S_BOARD *pos);
 extern void WriteFenLog(char *fen);
 extern void InitTEX();
 extern void InitSummary();
