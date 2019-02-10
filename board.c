@@ -293,7 +293,7 @@ const char *printFEN(const S_BOARD *pos) {
         if (pos->castlePerm & BQCA)
             result[strIndex++] = 'q';
     }
-    // TODO: Check if pos->hisPly / 2 + 1 is the correct formula
+    // Check if pos->hisPly / 2 + 1 is the correct formula
     strIndex += sprintf(result + strIndex, " %s %d %d", printSquare(pos->enPas),
                         pos->fiftyMove, (pos->hisPly + 1)/2);
     ASSERT(strIndex < 256);

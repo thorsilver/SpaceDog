@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
     setbuf(stdout, NULL);
     EngineOptions->SanMode = 0;
     EngineOptions->summary = 0;
+    EngineOptions->use_TBs = 0;
 
     int ArgNum = 0;
 

@@ -322,6 +322,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("startsum - start fancy summary file in TeX\n");
             printf("endtex - write closing statement to TeX game record\n");
             printf("endsum - complete and close fancy summary in TeX\n");
+            printf("usetb - use Syzygy tablebases (in folder \"syzygy\"\n");
             printf("** note ** - to reset time and depth, set to 0\n");
             printf("enter moves using b7b8q notation\n\n\n");
             continue;
@@ -432,6 +433,12 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
         if(!strcmp(command, "endsum")) {
             EndSummary();
+            continue;
+        }
+
+        if(!strcmp(command, "usetb")) {
+            EngineOptions->use_TBs = 1;
+            InitTBs();
             continue;
         }
 
