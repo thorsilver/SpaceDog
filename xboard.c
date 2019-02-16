@@ -82,6 +82,7 @@ int checkresult(S_BOARD *pos) {
 
 void PrintOptions() {
     printf("feature ping=1 setboard=1 colors=0 usermove=1 memory=1\n");
+    printf("feature egt=\"syzygy\"\n");
     printf("feature done=1\n");
 }
 
@@ -101,6 +102,7 @@ void XBoard_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
     int mps;
     int move = NOMOVE;
     char inBuf[80], command[80];
+    char egtbType[10], tbPath[60];
     int MB;
 
     engineSide = BLACK;
@@ -245,6 +247,21 @@ void XBoard_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             continue;
         }
 
+        if(!strcmp(command, "egtpath")) {
+            //sscanf(inBuf, "egtpath %s %s", egtbType, tbPath);
+            sscanf(inBuf, "egtpath %s %s", egtbType, tbPath);
+            if(!strcmp(egtbType, "syzygy")) {
+                EngineOptions->use_TBs = 1;
+                strcpy(EngineOptions->EGTB_PATH, tbPath);
+                printf("Using TB file path: %s\n", EngineOptions->EGTB_PATH);
+                InitTBs(tbPath);
+            } else {
+                printf("Sorry, SpaceDog only supports Syzygy endgame tablebases!\n");
+            }
+
+            continue;
+        }
+
         if(!strcmp(command, "usermove")){
             movestogo[pos->side]--;
             move = ParseMove(inBuf+9, pos);
@@ -270,7 +287,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
     int depth = MAXDEPTH, movetime = 3000;
     int engineSide = BOTH;
     int move = NOMOVE;
-    char inBuf[80], command[80];
+    char inBuf[80], command[80], syzygypath[50];
 
     engineSide = BLACK;
     ParseFen(START_FEN, pos);
@@ -436,9 +453,16 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             continue;
         }
 
+        if(!strcmp(command, "syzygypath")) {
+            sscanf(inBuf, "syzygypath %s", syzygypath);
+            strcpy(EngineOptions->EGTB_PATH, syzygypath);
+            printf("Using Syzygy Path: %s\n", syzygypath);
+            continue;
+        }
+
         if(!strcmp(command, "usetb")) {
             EngineOptions->use_TBs = 1;
-            InitTBs();
+            InitTBs(EngineOptions->EGTB_PATH);
             continue;
         }
 

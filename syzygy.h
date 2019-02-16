@@ -10,7 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <stdbool.h>
+#include <sys/types.h>
 #include "defs.h"
 
 //extern unsigned TB_LARGEST = 0;
@@ -33,6 +35,8 @@ struct TBpos
 };
 
 static bool parse_FEN_TB(struct TBpos *TBpos, const char *fen);
+//unsigned tbProbeWDL(struct TBpos* TBpos);
+unsigned tbProbeWDL(char *fen);
 int probeRootDTZ(S_BOARD *pos, char *fen, int depth);
 
 #endif //SPACEDOG_TBS_SYZYGY_H

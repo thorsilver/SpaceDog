@@ -183,13 +183,17 @@ void InitSq120To64() {
     }
 }
 
-void InitTBs() {
+void InitTBs(char *tbPath) {
     if(EngineOptions->use_TBs == 1) {
-        tb_init(TB_PATH);
+        if(tbPath == "") {
+            tb_init(TB_PATH);
+        } else {
+            tb_init(tbPath);
+        }
+
         if (TB_LARGEST == 0) {
-            printf("error: unable to initialize tablebase; no tablebase "
-                   "files found\n");
-            exit(-1);
+            printf("ERROR: unable to initialize tablebase; no tablebase files found\n");
+            //exit(-1);
         } else {
             printf("Using Syzygy tablebases for %d pieces or less!\n", TB_LARGEST);
         }
