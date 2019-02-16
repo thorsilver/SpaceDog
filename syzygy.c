@@ -325,20 +325,23 @@ static void move_to_str(const struct TBpos *pos, unsigned move, char *str)
     *str++ = '\0';
 }
 
-unsigned tbProbeWDL(struct TBpos* TBpos){
+unsigned tbProbeWDL(char *fen){
+    struct TBpos TBpos1;
+    struct TBpos *TBposWDL = &TBpos1;
+    parse_FEN_TB(TBposWDL, fen);
 
-    int cardinality = tb_pop_count(TBpos->white | TBpos->black);
+    int cardinality = tb_pop_count(TBposWDL->white | TBposWDL->black);
 
-    if (TBpos->ep != 0
-            ||  TBpos->castling != 0
-            ||  TBpos->rule50 >= 50
+    if (TBposWDL->ep != 0
+            ||  TBposWDL->castling != 0
+            ||  TBposWDL->rule50 >= 50
             ||  cardinality > (int)TB_LARGEST)
         return TB_RESULT_FAILED;
 
     return tb_probe_wdl(
-            TBpos->white, TBpos->black, TBpos->kings,
-            TBpos->queens, TBpos->rooks, TBpos->bishops, TBpos->knights, TBpos->pawns,
-            TBpos->rule50, TBpos->castling, TBpos->ep, TBpos->turn);
+            TBposWDL->white, TBposWDL->black, TBposWDL->kings,
+            TBposWDL->queens, TBposWDL->rooks, TBposWDL->bishops, TBposWDL->knights, TBposWDL->pawns,
+            TBposWDL->rule50, TBposWDL->castling, TBposWDL->ep, TBposWDL->turn);
 };
 
 int probeRootDTZ(S_BOARD *pos, char *fen, int depth) {

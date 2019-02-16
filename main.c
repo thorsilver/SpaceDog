@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
     EngineOptions->SanMode = 0;
     EngineOptions->summary = 0;
     EngineOptions->use_TBs = 0;
+    strcpy(EngineOptions->EGTB_PATH, "syzygy/");
 
     int ArgNum = 0;
 

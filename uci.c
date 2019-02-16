@@ -121,9 +121,11 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
     printf("id author Eric Silverman\n");
     printf("option name Hash type spin default 64 min 4 max %d\n",MAX_HASH);
     printf("option name Book type check default true\n");
+    printf("option name SyzygyPath type string default syzygy\n");
     printf("uciok\n");
 
     int MB = 64;
+    char tbPath[50];
 
     while (TRUE) {
         memset(&line[0], 0, sizeof(line));
@@ -160,6 +162,12 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             if(MB > MAX_HASH) MB = MAX_HASH;
             printf("Set Hash to %d MB\n",MB);
             InitHashTable(pos->HashTable, MB);
+        } else if (!strncmp(line, "setoption name SyzygyPath value ", 32)) {
+            sscanf(line,"%*s %*s %*s %*s %s", tbPath);
+            EngineOptions->use_TBs = 1;
+            strcpy(EngineOptions->EGTB_PATH, tbPath);
+            printf("Using Syzygy file path: %s\n", EngineOptions->EGTB_PATH);
+            InitTBs(tbPath);
         } else if (!strncmp(line, "setoption name Book value ", 26)) {
             char *ptrTrue = NULL;
             ptrTrue = strstr(line, "true");

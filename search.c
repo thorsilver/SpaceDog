@@ -196,6 +196,45 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
         return Score;
     }
 
+    // Check total material for WDL probe
+    int materialTotal = 0;
+    int i;
+    for (i = 0; i < 13; i++) {
+        materialTotal += pos->pceNum[i];
+    }
+    char *FEN;
+    int WDL;
+    // Probe WDL tables
+    if(EngineOptions->use_TBs == 1 && materialTotal <= TB_LARGEST) {
+        FEN = printFEN(pos);
+        WDL = tbProbeWDL(FEN);
+        if (WDL != TB_RESULT_FAILED) {
+            info->tbhits++;
+            switch (WDL) {
+                case TB_LOSS:
+                    Score = -TBWIN;
+                    break;
+                case TB_BLESSED_LOSS:
+                    Score = -3;
+                    break;
+                case TB_DRAW:
+                    Score = 0;
+                    break;
+                case TB_CURSED_WIN:
+                    Score = 3;
+                    break;
+                case TB_WIN:
+                    Score = TBWIN;
+                    break;
+            }
+            //TakeMove(pos);
+            if(Score == TBWIN) {
+                StoreHashEntry(pos, &PvMove, Score, HFEXACT, depth);
+            }
+            return Score;
+        }
+    }
+
     if( DoNull && !InCheck && pos->ply && (pos->bigPce[pos->side] > 0) && depth >= 4) {
         MakeNullMove(pos);
         Score = -AlphaBeta( -beta, -beta + 1, depth-4, pos, info, FALSE);
@@ -369,8 +408,8 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
                 printf("%d %d %d %ld ",
                        currentDepth,bestScore,(GetTimeMs()-info->starttime)/10,info->nodes);
             } else if(info->POST_THINKING == TRUE) {
-                printf("score:%d depth:%d nodes:%ld time:%d(ms) ",
-                       bestScore,currentDepth,info->nodes,GetTimeMs()-info->starttime);
+                printf("score:%d depth:%d nodes:%ld tbhits: %ld time:%d(ms) ",
+                       bestScore,currentDepth,info->nodes,info->tbhits, GetTimeMs()-info->starttime);
             }
             if(info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
                 pvMoves = GetPvLine(currentDepth, pos);

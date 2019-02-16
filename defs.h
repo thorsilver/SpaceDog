@@ -45,6 +45,7 @@ typedef unsigned long long U64;
 
 #define INFINITE 30000
 #define ISMATE (INFINITE - MAXDEPTH)
+#define TBWIN 20000
 
 enum { EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK };
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE };
@@ -173,6 +174,7 @@ typedef struct {
     int SanMode;
     int summary;
     int use_TBs;
+    char EGTB_PATH[50];
     int TB_PROBE_DEPTH;
 } S_OPTIONS;
 
@@ -266,7 +268,7 @@ extern S_OPTIONS EngineOptions[1];
 // init.c
 extern void AllInit();
 extern void InitFilesRanksBrd();
-extern void InitTBs();
+extern void InitTBs(char *tbPath);
 
 
 // bitboards.c
