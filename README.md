@@ -29,7 +29,7 @@ In console mode, type _help_ to get a list of commands.  Most are pretty self-ex
 ### Using Syzygy Tablebases
 SpaceDog can use Syzygy endgame tablebases thanks to the Fathom API.  They can be turned on by using the following commands:
 
-* Console mode: command _syzygypath PATH_ sets the path to your tablebase files, command usetb will turn on tablebase support and initialise them
+* Console mode: command _syzygypath PATH_ sets the path to your tablebase files, command _usetb_ will turn on tablebase support and initialise them (the default path is _syzygy/_ within SpaceDog's folder)
 * XBoard: command _egtpath syzygy PATH_ will activate the tablebases and find them and initialise them at the given path
 * UCI: command _setoption name SyzygyPath value PATH_ will activate the tablebases and find them at the given path
 
