@@ -450,6 +450,9 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
         if(EngineOptions->texLog == 1) {
             WriteMoveTEX(PrMove(bestMove), pos->hisPly);
         };
+        if(EngineOptions->newTexLog == 1) {
+            NewWriteTEX(printFEN(pos), PrMove(bestMove), sanMove, pos->hisPly);
+        }
         /*if(EngineOptions->texLog == 1) {
             char fullPV[50], nextMove[10];
             for(pvNum = 0; pvNum < pvMoves; ++pvNum) {
