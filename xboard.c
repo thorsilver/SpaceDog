@@ -335,6 +335,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("view - show current depth and movetime settings\n");
             printf("setboard x - set position to fen x\n");
             printf("texlog - write game record in TeX and initialise the file\n");
+            printf("newtex - write game record in TeX in new format");
             printf("pgnlog - write game record in PGN and initialise the file\n");
             printf("startsum - start fancy summary file in TeX\n");
             printf("endtex - write closing statement to TeX game record\n");
@@ -431,6 +432,12 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             continue;
         };
 
+        if(!strcmp(command, "newtex")) {
+            NewTEX();
+            EngineOptions->newTexLog = 1;
+            continue;
+        };
+
         if(!strcmp(command, "pgnlog")) {
             InitSanLog();
             EngineOptions->SanMode = 1;
@@ -482,7 +489,10 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         checkresult(pos);
         if(EngineOptions->texLog == 1) {
             WriteMoveTEX(inBuf, pos->hisPly);
-        };
+        }
+        if(EngineOptions->newTexLog == 1) {
+            NewWriteTEX(printFEN(pos), PrMove(move), sanMove, pos->hisPly);
+        }
         //WriteMoveTEX(inBuf, pos->hisPly);
         PrintBoard(pos);
         printf("Standard Algebraic Notation: %s\n\n", sanMove);
