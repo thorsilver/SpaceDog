@@ -47,6 +47,8 @@ typedef unsigned long long U64;
 #define ISMATE (INFINITE - MAXDEPTH)
 #define TBWIN 20000
 
+
+
 enum { EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK };
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE };
 enum {RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE };
@@ -178,6 +180,20 @@ typedef struct {
     char EGTB_PATH[50];
     int TB_PROBE_DEPTH;
 } S_OPTIONS;
+
+// eval vector
+typedef struct {
+    int matScore;
+    int tempo;
+    int phase;
+    int pawns[2];
+    int knights[2];
+    int bishops[2];
+    int rooks[2];
+    int queens[2];
+    int kings[2];
+    int pairs[2];
+} S_EVAL;
 
 /* GAME MOVE */
 
@@ -356,7 +372,7 @@ extern int ProbePvMove(const S_BOARD *pos);
 extern int GetPvLine(const int depth, S_BOARD *pos);
 extern void ClearHashTable(S_HASHTABLE *table);
 
-// evaluate.c
+// evaluate.c/eval.c
 extern int EvalPosition(const S_BOARD *pos);
 extern void MirrorEvalTest(S_BOARD *pos);
 

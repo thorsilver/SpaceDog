@@ -16,7 +16,6 @@ add_executable(SpaceDog_TBs
         board.c
         data.c
         defs.h
-        evaluate.c
         hashkeys.c
         init.c
         io.c
@@ -32,4 +31,4 @@ add_executable(SpaceDog_TBs
         search.c
         uci.c
         validate.c
-        xboard.c syzygy.c syzygy.h)
+        xboard.c syzygy.c syzygy.h eval.c eval.h)

@@ -401,6 +401,9 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
 
             pvMoves = GetPvLine(currentDepth, pos);
             bestMove = pos->PvArray[0];
+            if(pos->side == BLACK) {
+                bestScore = -bestScore;
+            }
             if(info->GAME_MODE == UCIMODE) {
                 printf("info score cp %d depth %d nodes %ld time %d ",
                        bestScore,currentDepth,info->nodes,GetTimeMs()-info->starttime);
