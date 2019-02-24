@@ -474,6 +474,11 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         }
 
         move = ParseMove(inBuf, pos);
+        int CheckCheck = CheckMove(pos, move);
+        if(CheckCheck == 1) {
+            printf("Illegal move! In check!");
+            continue;
+        }
         if(move == NOMOVE) {
             printf("Command unknown:%s\n",inBuf);
             continue;

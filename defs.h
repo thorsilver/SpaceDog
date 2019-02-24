@@ -316,6 +316,7 @@ char *PrMoveSAN(S_BOARD *pos,  int move);
 int CheckEnd(S_BOARD *pos, int move);
 extern void PrintMoveList(const S_MOVELIST *list);
 extern int ParseMove(char *ptrChar, S_BOARD *pos);
+extern int CheckMove(S_BOARD *pos, int move);
 extern int ParseMoveTB(char *ptrChar, S_BOARD *pos);
 extern void WriteFenLog(char *fen);
 extern void InitTEX();

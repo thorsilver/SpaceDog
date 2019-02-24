@@ -310,6 +310,15 @@ int CheckEnd(S_BOARD *pos, int move) {
     }
 }
 
+int CheckMove(S_BOARD *pos, int move) {
+    if(!MakeMove(pos, move)) {
+        return 1;
+    } else {
+        TakeMove(pos);
+        return 0;
+    }
+}
+
 int ParseMove(char *ptrChar, S_BOARD *pos) {
 
     ASSERT(CheckBoard(pos));
