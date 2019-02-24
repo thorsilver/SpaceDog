@@ -10,6 +10,17 @@
 #include "syzygy.h"
 #include "fathom/src/tbprobe.h"
 
+static const int RazorDepth = 1;
+static const int RazorMargin = 350;
+
+static const int BetaPruningDepth = 8;
+static const int BetaMargin = 85;
+
+//static const int FutilityMargin = 95;
+static const int FutilityPruningDepth = 8;
+int FutilityMargin[16] = {  0, 100, 150, 200,  250,  300,  400,  500,
+                       600, 700, 800, 900, 1000, 1100, 1200, 1300 };
+
 
 int rootDepth;
 
@@ -85,6 +96,7 @@ static void ClearForSearch(S_BOARD *pos, S_SEARCHINFO *info) {
     info->tbhits = 0;
     info->fh = 0;
     info->fhf = 0;
+    info->pruned = 0;
 }
 
 static int Quiescence(int alpha, int beta, S_BOARD *pos, S_SEARCHINFO *info) {
@@ -235,6 +247,27 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
         }
     }
 
+    int eval = EvalPosition(pos);
+
+    // Razoring
+    if (   !PvMove && !InCheck
+           &&  depth <= RazorDepth
+           &&  eval + RazorMargin < alpha) {
+        info->pruned++;
+        return Quiescence(alpha, beta, pos, info);
+    }
+
+    // Step 8. Beta Pruning / Reverse Futility Pruning / Static Null
+    // Move Pruning. If the eval is few pawns above beta then exit early
+    if (   !PvMove
+           && !InCheck
+           &&  depth <= BetaPruningDepth
+           &&  eval - BetaMargin * depth > beta) {
+        info->pruned++;
+        return eval;
+    }
+
+    // Null Move Pruning
     if( DoNull && !InCheck && pos->ply && (pos->bigPce[pos->side] > 0) && depth >= 4) {
         MakeNullMove(pos);
         Score = -AlphaBeta( -beta, -beta + 1, depth-4, pos, info, FALSE);
@@ -272,6 +305,15 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
     }
 
     int FoundPV = FALSE;
+
+    /*// Futility Pruning
+    int MaterialSTM = pos->material[pos->side] - pos->material[pos->side^1];
+    int InCheckNow = SqAttacked(pos->KingSq[pos->side],pos->side^1,pos);
+    if (FoundPV == FALSE && !InCheckNow && MoveNum > 1
+        && (MaterialSTM + FutilityMargin[depth]) <= alpha && depth < FutilityPruningDepth) {
+        info->pruned++;
+        return eval;
+    }*/
 
     for(MoveNum = 0; MoveNum < list->count; ++MoveNum) {
 
@@ -411,8 +453,8 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
                 printf("%d %d %d %ld ",
                        currentDepth,bestScore,(GetTimeMs()-info->starttime)/10,info->nodes);
             } else if(info->POST_THINKING == TRUE) {
-                printf("score:%d depth:%d nodes:%ld tbhits: %ld time:%d(ms) ",
-                       bestScore,currentDepth,info->nodes,info->tbhits, GetTimeMs()-info->starttime);
+                printf("score:%d depth:%d nodes:%ld tbhits: %ld pruned: %ld time:%d(ms) ",
+                       bestScore,currentDepth,info->nodes,info->tbhits, info->pruned, GetTimeMs()-info->starttime);
             }
             if(info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
                 pvMoves = GetPvLine(currentDepth, pos);
