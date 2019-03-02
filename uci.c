@@ -106,7 +106,7 @@ void ParsePosition(char* lineIn, S_BOARD *pos) {
             ptrChar++;
         }
     }
-    PrintBoard(pos);
+    //PrintBoard(pos);
 }
 
 void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
@@ -141,6 +141,8 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             continue;
         } else if (!strncmp(line, "position", 8)) {
             ParsePosition(line, pos);
+        } else if (!strncmp(line, "print", 8)) {
+            PrintBoard(pos);
         } else if (!strncmp(line, "ucinewgame", 10)) {
             ParsePosition("position startpos\n", pos);
         } else if (!strncmp(line, "go", 2)) {
