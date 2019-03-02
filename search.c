@@ -100,6 +100,7 @@ static void ClearForSearch(S_BOARD *pos, S_SEARCHINFO *info) {
     info->fh = 0;
     info->fhf = 0;
     info->pruned = 0;
+    info->lmr = 0;
 }
 
 static int Quiescence(int alpha, int beta, S_BOARD *pos, S_SEARCHINFO *info) {
@@ -261,8 +262,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
         return Quiescence(alpha, beta, pos, info);
     }
 
-    // Step 8. Beta Pruning / Reverse Futility Pruning / Static Null
-    // Move Pruning. If the eval is few pawns above beta then exit early
+    // Beta Pruning
     if (   !PvMove
            && !InCheck
            &&  depth <= BetaPruningDepth
@@ -329,16 +329,39 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
 
         Legal++;
 
-        // Late Move Pruning
+        // Calculate pruney bits
         int promoted = PROMOTED(list->moves[MoveNum].move);
         int capped = CAPTURED(list->moves[MoveNum].move);
         int checked = SqAttacked(pos->KingSq[pos->side],pos->side^1,pos);
         int checking = SqAttacked(pos->KingSq[pos->side^1], pos->side, pos);
+        int MaterialSTM = pos->material[pos->side] - pos->material[pos->side^1];
+
+        // Futility Pruning
+        if (MoveNum > 1 && !checked && !checking && FoundPV == FALSE && promoted == EMPTY && capped == EMPTY
+                && (MaterialSTM + FutilityMargin[depth]) <= alpha && depth < FutilityPruningDepth) {
+            info->pruned++;
+            TakeMove(pos);
+            continue;
+        }
+
+        // Late Move Pruning
         if (MoveNum > LMPArray[depth] && depth > 1 && depth < LMPDepth && FoundPV == FALSE && promoted == EMPTY
             && capped == EMPTY && !checked && !checking && BestScore != -INFINITE && BestScore != INFINITE) {
             info->pruned++;
             TakeMove(pos);
             continue;
+        }
+
+        // Late Move Reductions
+        if (FoundPV == FALSE && promoted == EMPTY && !checked && !checking && depth < 3 && MoveNum > 4) {
+            info->lmr++;
+            int reduce;
+            if (MoveNum > 7) {
+                reduce = depth/3 + 1;
+            } else {
+                reduce = 2;
+            }
+            Score = -AlphaBeta(-alpha - 1, -alpha, depth - reduce, pos, info, TRUE);
         }
 
         // PVS (Principal Variation Search)
@@ -463,14 +486,14 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
                 bestScore = -bestScore;
             }
             if(info->GAME_MODE == UCIMODE) {
-                printf("info score cp %d depth %d nodes %ld time %d ",
-                       bestScore,currentDepth,info->nodes,GetTimeMs()-info->starttime);
+                printf("info score cp %d depth %d nodes %ld tbhits %ld pruned %ld lmr %ld time %d ",
+                       bestScore,currentDepth,info->nodes,info->tbhits, info->pruned, info->lmr, GetTimeMs()-info->starttime);
             } else if(info->GAME_MODE == XBOARDMODE && info->POST_THINKING == TRUE) {
                 printf("%d %d %d %ld ",
                        currentDepth,bestScore,(GetTimeMs()-info->starttime)/10,info->nodes);
             } else if(info->POST_THINKING == TRUE) {
-                printf("score:%d depth:%d nodes:%ld tbhits: %ld pruned: %ld time:%d(ms) ",
-                       bestScore,currentDepth,info->nodes,info->tbhits, info->pruned, GetTimeMs()-info->starttime);
+                printf("score:%d depth:%d nodes:%ld tbhits:%ld pruned:%ld lmr:%ld time:%d(ms) ",
+                       bestScore,currentDepth,info->nodes,info->tbhits, info->pruned, info->lmr, GetTimeMs()-info->starttime);
             }
             if(info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
                 pvMoves = GetPvLine(currentDepth, pos);
@@ -499,7 +522,8 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
         printf("move %s\n",PrMove(bestMove));
         MakeMove(pos, bestMove);
     } else {
-        printf("\n\n***!! SpaceDog makes move %s !!***\n\n",PrMove(bestMove));
+        //printf("\n\n***!! SpaceDog makes move %s !!***\n\n",PrMove(bestMove));
+        printf("\n\n***!! Best Move: %s  Nodes: %ld  Depth: %d !!***\n\n", PrMove(bestMove), info->nodes, currentDepth);
         char *sanMove = PrMoveSAN(pos, bestMove);
         if(EngineOptions->SanMode == 1) {
             SanLog(sanMove, pos->side, pos->hisPly);

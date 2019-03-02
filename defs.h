@@ -164,6 +164,7 @@ typedef struct {
     float fhf;
     int nullCut;
     long pruned;
+    long lmr;
 
     int GAME_MODE;
     int POST_THINKING;
