@@ -21,6 +21,9 @@ static const int FutilityPruningDepth = 8;
 int FutilityMargin[16] = {  0, 100, 150, 200,  250,  300,  400,  500,
                        600, 700, 800, 900, 1000, 1100, 1200, 1300 };
 
+static const int LMPDepth = 15;
+static const int LMPArray[16] = {3, 5, 9, 14, 20, 28, 38, 49, 61, 75, 90, 107, 124, 143, 164, 186};
+
 
 int rootDepth;
 
@@ -174,7 +177,8 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
     ASSERT(CheckBoard(pos));
     ASSERT(beta>alpha);
     ASSERT(depth>=0);
-
+    if(depth < 0)
+        depth = 0;
     if(depth <= 0) {
         return Quiescence(alpha, beta, pos, info);
         // return EvalPosition(pos);
@@ -324,6 +328,18 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
         }
 
         Legal++;
+
+        // Late Move Pruning
+        int promoted = PROMOTED(list->moves[MoveNum].move);
+        int capped = CAPTURED(list->moves[MoveNum].move);
+        int checked = SqAttacked(pos->KingSq[pos->side],pos->side^1,pos);
+        int checking = SqAttacked(pos->KingSq[pos->side^1], pos->side, pos);
+        if (MoveNum > LMPArray[depth] && depth > 1 && depth < LMPDepth && FoundPV == FALSE && promoted == EMPTY
+            && capped == EMPTY && !checked && !checking && BestScore != -INFINITE && BestScore != INFINITE) {
+            info->pruned++;
+            TakeMove(pos);
+            continue;
+        }
 
         // PVS (Principal Variation Search)
         if(FoundPV == TRUE){
