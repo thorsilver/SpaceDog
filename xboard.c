@@ -92,7 +92,7 @@ void XBoard_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
     info->POST_THINKING = TRUE;
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
-    PrintOptions(); // HACK
+    //PrintOptions(); // HACK
 
     int depth = -1, movestogo[2] = {30,30 }, movetime = -1;
     int time = -1, inc = 0;

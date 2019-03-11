@@ -29,7 +29,7 @@ exit(1);}
 
 typedef unsigned long long U64;
 
-#define NAME "SpaceDog 1.0"
+#define NAME "SpaceDog 0.97.5"
 #define BRD_SQ_NUM 120
 
 #define MAXGAMEMOVES 2048

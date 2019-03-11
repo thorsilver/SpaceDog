@@ -252,4 +252,5 @@ int EvalPosition(const S_BOARD *pos) {
     } else {
         return -final_eval;
     }
+    //return final_eval;
 }

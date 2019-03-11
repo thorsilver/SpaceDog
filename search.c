@@ -337,23 +337,23 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
         int MaterialSTM = pos->material[pos->side] - pos->material[pos->side^1];
 
         // Futility Pruning
-        if (MoveNum > 1 && !checked && !checking && FoundPV == FALSE && promoted == EMPTY && capped == EMPTY
+        /*if (MoveNum > 1 && !checked && !checking && FoundPV == FALSE && promoted == EMPTY && capped == EMPTY
                 && (MaterialSTM + FutilityMargin[depth]) <= alpha && depth < FutilityPruningDepth) {
             info->pruned++;
             TakeMove(pos);
             continue;
-        }
+        }*/
 
         // Late Move Pruning
-        if (MoveNum > LMPArray[depth] && depth > 1 && depth < LMPDepth && FoundPV == FALSE && promoted == EMPTY
+        /*if (MoveNum > LMPArray[depth] && depth > 1 && depth < LMPDepth && FoundPV == FALSE && promoted == EMPTY
             && capped == EMPTY && !checked && !checking && BestScore != -INFINITE && BestScore != INFINITE) {
             info->pruned++;
             TakeMove(pos);
             continue;
-        }
+        }*/
 
         // Late Move Reductions
-        if (FoundPV == FALSE && promoted == EMPTY && !checked && !checking && depth < 3 && MoveNum > 4) {
+        /*if (FoundPV == FALSE && promoted == EMPTY && !checked && !checking && depth < 3 && MoveNum > 4) {
             info->lmr++;
             int reduce;
             if (MoveNum > 7) {
@@ -362,7 +362,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
                 reduce = 2;
             }
             Score = -AlphaBeta(-alpha - 1, -alpha, depth - reduce, pos, info, TRUE);
-        }
+        }*/
 
         // PVS (Principal Variation Search)
         if(FoundPV == TRUE){
@@ -482,18 +482,18 @@ void SearchPosition(S_BOARD *pos, S_SEARCHINFO *info) {
 
             pvMoves = GetPvLine(currentDepth, pos);
             bestMove = pos->PvArray[0];
-            if(pos->side == BLACK) {
+            if (pos->side == BLACK){
                 bestScore = -bestScore;
             }
             if(info->GAME_MODE == UCIMODE) {
-                printf("info score cp %d depth %d nodes %ld tbhits %ld pruned %ld lmr %ld time %d ",
-                       bestScore,currentDepth,info->nodes,info->tbhits, info->pruned, info->lmr, GetTimeMs()-info->starttime);
+                printf("info score cp %d depth %d nodes %ld tbhits %ld pruned %ld time %d ",
+                       bestScore,currentDepth,info->nodes,info->tbhits, info->pruned, GetTimeMs()-info->starttime);
             } else if(info->GAME_MODE == XBOARDMODE && info->POST_THINKING == TRUE) {
                 printf("%d %d %d %ld ",
                        currentDepth,bestScore,(GetTimeMs()-info->starttime)/10,info->nodes);
             } else if(info->POST_THINKING == TRUE) {
-                printf("score:%d depth:%d nodes:%ld tbhits:%ld pruned:%ld lmr:%ld time:%d(ms) ",
-                       bestScore,currentDepth,info->nodes,info->tbhits, info->pruned, info->lmr, GetTimeMs()-info->starttime);
+                printf("score:%d depth:%d nodes:%ld tbhits:%ld pruned:%ld time:%d(ms) ",
+                       bestScore,currentDepth,info->nodes,info->tbhits, info->pruned, GetTimeMs()-info->starttime);
             }
             if(info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
                 pvMoves = GetPvLine(currentDepth, pos);
