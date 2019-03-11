@@ -246,7 +246,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
             }
             //TakeMove(pos);
             if(Score == TBWIN) {
-                StoreHashEntry(pos, &PvMove, Score, HFEXACT, depth);
+                StoreHashEntry(pos, PvMove, Score, HFEXACT, depth);
             }
             return Score;
         }
