@@ -464,7 +464,7 @@ void NewTEX() {
     fclose(fp);
 };
 
-void NewWriteTEX(char *fen, char *move, char *san, int ply) {
+void NewWriteTEX(const char *fen, char *move, char *san, int ply) {
     FILE *fp;
     int turn = (ply + 1)/2;
     fp=fopen(TEX_GAME_LOG, "a");

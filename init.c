@@ -185,7 +185,8 @@ void InitSq120To64() {
 
 void InitTBs(char *tbPath) {
     if(EngineOptions->use_TBs == 1) {
-        if(tbPath == "") {
+        //if(tbPath == "") {
+        if(!strcmp(tbPath, "")) {
             tb_init(TB_PATH);
         } else {
             tb_init(tbPath);

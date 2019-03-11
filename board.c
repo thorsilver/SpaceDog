@@ -253,7 +253,7 @@ const char *printSquare(const unsigned sq) {
     return result;*/
 }
 
-const char *printFEN(const S_BOARD *pos) {
+char *printFEN(const S_BOARD *pos) {
     int emptyCount = 0;
     int strIndex = 0;
     static char result[256];

@@ -340,7 +340,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("startsum - start fancy summary file in TeX\n");
             printf("endtex - write closing statement to TeX game record\n");
             printf("endsum - complete and close fancy summary in TeX\n");
-            printf("usetb - use Syzygy tablebases (in folder \"syzygy\"\n");
+            printf("usetb - use Syzygy tablebases (in folder \"syzygy\")\n");
             printf("** note ** - to reset time and depth, set to 0\n");
             printf("enter moves using b7b8q notation\n\n\n");
             continue;
@@ -474,15 +474,16 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         }
 
         move = ParseMove(inBuf, pos);
+        if(move == NOMOVE) {
+            printf("Command unknown:%s\n",inBuf);
+            continue;
+        }
         int CheckCheck = CheckMove(pos, move);
         if(CheckCheck == 1) {
             printf("Illegal move! In check!");
             continue;
         }
-        if(move == NOMOVE) {
-            printf("Command unknown:%s\n",inBuf);
-            continue;
-        }
+
         char *sanMove = PrMoveSAN(pos, move);
         if(EngineOptions->SanMode == 1) {
             SanLog(sanMove, pos->side, pos->hisPly);
