@@ -30,9 +30,62 @@ int MaterialDraw(const S_BOARD *pos) {
     return FALSE;
 }
 
+int CheckMob(S_BOARD *pos, int side) {
+    // Mobility
+    int flipped = 0;
+    if(pos->side != side) {
+        MakeNullMove(pos);
+        flipped = 1;
+        //printf("Board flipped!");
+    }
+    S_MOVELIST moblist[1];
+    GenerateAllMoves(pos, moblist);
+    int bishMob = 0;
+    int knightMob = 0;
+    int rookMob = 0;
+    int queenMob = 0;
+    int moveNum = 0;
+    for(moveNum = 0; moveNum < moblist->count; ++moveNum){
+        /*if(!MakeMove(pos, moblist->moves[moveNum].move)){
+            continue;
+        }*/
+        //TakeMove(pos);
+        int from = FROMSQ(moblist->moves[moveNum].move);
+        int movingPiece = pos->pieces[from];
+        //printf("Moving Piece: %d\n", movingPiece);
+        if(pos->side == WHITE && movingPiece != 0) {
+            if (movingPiece == wN) {
+                knightMob += 1;
+            } else if (movingPiece == wB) {
+                bishMob += 1;
+            } else if (movingPiece == wR) {
+                rookMob += 1;
+            } else if (movingPiece == wQ) {
+                queenMob += 1;
+            }
+        } else if (pos->side == BLACK && movingPiece != 0) {
+            if (movingPiece == bN) {
+                knightMob += 1;
+            } else if (movingPiece == wB) {
+                bishMob += 1;
+            } else if (movingPiece == wR) {
+                rookMob += 1;
+            } else if (movingPiece == wQ) {
+                queenMob += 1;
+            }
+        }
+    }
+    if (flipped == 1) {
+        TakeNullMove(pos);
+    }
+    int mobScore = (4 * (knightMob - 4)) + (3 * (bishMob - 7)) + (4 * (rookMob - 7)) + (4 * (queenMob - 14));
+    return mobScore;
+}
+
+
 //#define ENDGAME_MAT (1 * PieceVal[wR] + 2 * PieceVal[wN] + 2 * PieceVal[wP] + PieceVal[wK])
 
-int EvalPosition(const S_BOARD *pos) {
+int EvalPosition(S_BOARD *pos) {
 
     ASSERT(CheckBoard(pos));
 
@@ -228,6 +281,7 @@ int EvalPosition(const S_BOARD *pos) {
     ASSERT(SqOnBoard(sq));
     ASSERT(MIRROR64(SQ64(sq))>=0 && MIRROR64(SQ64(sq))<=63);
 
+
     //if( (pos->material[WHITE] <= ENDGAME_MAT) ) {
     if( (total_material <= 2500) ) {
         eval.kings[BLACK] -= KingE[MIRROR64(SQ64(sq))];
@@ -242,10 +296,16 @@ int EvalPosition(const S_BOARD *pos) {
     if(pos->pceNum[wR] >= 2) eval.pairs[WHITE] += RookPair;
     if(pos->pceNum[bR] >= 2) eval.pairs[BLACK] -= RookPair;
 
+
+    int evalMobWhite = CheckMob(pos, WHITE);
+    //printf("evalMobWhite = %d", evalMobWhite);
+    int evalMobBlack = CheckMob(pos, BLACK);
+    //printf("evalMobBlack = %d", evalMobBlack);
+
     final_eval = eval.matScore + eval.tempo + (eval.pawns[WHITE] + eval.pawns[BLACK]) + (eval.knights[WHITE] + eval.knights[BLACK])
             + (eval.bishops[WHITE] + eval.bishops[BLACK]) + (eval.rooks[WHITE] + eval.rooks[BLACK])
             + (eval.queens[WHITE] + eval.queens[BLACK]) + (eval.kings[WHITE] + eval.kings[BLACK])
-                 + (eval.pairs[WHITE] + eval.pairs[BLACK]);
+                 + (eval.pairs[WHITE] + eval.pairs[BLACK]) + evalMobWhite + evalMobBlack;
 
     if(pos->side == WHITE) {
         return final_eval;
