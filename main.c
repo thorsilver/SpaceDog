@@ -82,6 +82,14 @@ int main(int argc, char *argv[]) {
                         return 0;
                     }
                 }
+                if(!strcmp(mode, "console")) {
+                    Console_Loop(pos, info);
+                    if (info->quit == TRUE) {
+                        free(pos->HashTable->pTable);
+                        CleanPolyBook();
+                        return 0;
+                    }
+                }
             case ':':
                 fprintf(stderr, "Option -%c got a bad value!\n", optopt);
                 break;

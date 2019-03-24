@@ -284,10 +284,11 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
 
-    int depth = MAXDEPTH, movetime = 3000;
+    int depth = MAXDEPTH, movetime = 3000, hashsize = 64;
     int engineSide = BOTH;
     int move = NOMOVE;
     char inBuf[80], command[80], syzygypath[50];
+    InitHashTable(pos->HashTable, hashsize);
 
     engineSide = BLACK;
     ParseFen(START_FEN, pos);
@@ -331,6 +332,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("new - start new game\n");
             printf("go - set computer thinking\n");
             printf("depth x - set depth to x\n");
+            printf("hash x - set hash table size to x MB\n");
             printf("time x - set thinking time to x seconds (depth still applies if set)\n");
             printf("view - show current depth and movetime settings\n");
             printf("setboard x - set position to fen x\n");
@@ -405,6 +407,13 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         if(!strcmp(command, "depth")) {
             sscanf(inBuf, "depth %d", &depth);
             if(depth==0) depth = MAXDEPTH;
+            continue;
+        }
+
+        if(!strcmp(command, "hash")) {
+            sscanf(inBuf, "hash %d", &hashsize);
+            if(hashsize > MAX_HASH) hashsize = MAX_HASH;
+            InitHashTable(pos->HashTable, hashsize);
             continue;
         }
 
