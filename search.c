@@ -310,8 +310,8 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
 
     int FoundPV = FALSE;
 
-    /*// Futility Pruning
-    int MaterialSTM = pos->material[pos->side] - pos->material[pos->side^1];
+    // Futility Pruning
+    /*int MaterialSTM = pos->material[pos->side] - pos->material[pos->side^1];
     int InCheckNow = SqAttacked(pos->KingSq[pos->side],pos->side^1,pos);
     if (FoundPV == FALSE && !InCheckNow && MoveNum > 1
         && (MaterialSTM + FutilityMargin[depth]) <= alpha && depth < FutilityPruningDepth) {
@@ -330,11 +330,11 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
         Legal++;
 
         // Calculate pruney bits
-        int promoted = PROMOTED(list->moves[MoveNum].move);
-        int capped = CAPTURED(list->moves[MoveNum].move);
-        int checked = SqAttacked(pos->KingSq[pos->side],pos->side^1,pos);
-        int checking = SqAttacked(pos->KingSq[pos->side^1], pos->side, pos);
-        int MaterialSTM = pos->material[pos->side] - pos->material[pos->side^1];
+        //int promoted = PROMOTED(list->moves[MoveNum].move);
+        //int capped = CAPTURED(list->moves[MoveNum].move);
+        //int checked = SqAttacked(pos->KingSq[pos->side],pos->side^1,pos);
+        //int checking = SqAttacked(pos->KingSq[pos->side^1], pos->side, pos);
+        //int MaterialSTM = pos->material[pos->side] - pos->material[pos->side^1];
 
         // Futility Pruning
         /*if (MoveNum > 1 && !checked && !checking && FoundPV == FALSE && promoted == EMPTY && capped == EMPTY
