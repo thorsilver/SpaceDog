@@ -193,10 +193,10 @@ void InitTBs(char *tbPath) {
         }
 
         if (TB_LARGEST == 0) {
-            printf("ERROR: unable to initialize tablebase; no tablebase files found\n");
+            printf("ERROR: unable to initialize tablebase; no tablebase files found\n\n");
             //exit(-1);
         } else {
-            printf("Using Syzygy tablebases for %d pieces or less!\n", TB_LARGEST);
+            printf("Using Syzygy tablebases for %d pieces or less!\n\n", TB_LARGEST);
         }
     }
 };

@@ -190,10 +190,14 @@ typedef struct {
     int phase;
     int pawns[2];
     int knights[2];
+    int knights_eg[2];
     int bishops[2];
+    int bishops_eg[2];
     int rooks[2];
     int queens[2];
+    int queens_eg[2];
     int kings[2];
+    int kings_eg[2];
     int pairs[2];
 } S_EVAL;
 
@@ -376,7 +380,7 @@ extern int GetPvLine(const int depth, S_BOARD *pos);
 extern void ClearHashTable(S_HASHTABLE *table);
 
 // evaluate.c/eval.c
-extern int EvalPosition(const S_BOARD *pos);
+extern int EvalPosition(S_BOARD *pos);
 extern void MirrorEvalTest(S_BOARD *pos);
 
 // uci.c

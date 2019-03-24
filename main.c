@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "defs.h"
 
 #define fen1 "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
@@ -32,42 +33,76 @@ int main(int argc, char *argv[]) {
     S_SEARCHINFO info[1];
     info->quit = FALSE;
     pos->HashTable->pTable = NULL;
-    InitHashTable(pos->HashTable, 64);
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
     EngineOptions->SanMode = 0;
     EngineOptions->summary = 0;
     EngineOptions->use_TBs = 0;
-    strcpy(EngineOptions->EGTB_PATH, "syzygy/");
 
-    int ArgNum = 0;
+    int opt_index = 0;
+    int hash_size = 0;
+    char *syzygypath = NULL;
+    char *mode = NULL;
+    char *bookname = NULL;
 
 
-    // Parsing command line arguments
-    if(argc==1){
-        strcpy(EngineOptions->BookName, "bookfish.bin");
-        printf("Using default opening book: BookFish!\n\n");
-    } else if(argc==2){
-        if(strncmp(argv[1], "NoBook", 6) == 0) {
-            EngineOptions->UseBook = FALSE;
-            printf("Opening Book Off!\n\n");
-        }
-    } else if(argc==3) {
-        if(strncmp(argv[1], "BookName", 8) == 0) {
-            strcpy(EngineOptions->BookName, argv[2]);
-            printf("USING OPENING BOOK: %s\n\n",EngineOptions->BookName);
+    while (( opt_index = getopt(argc, argv, "h:s:m:b:")) != -1) {
+        switch(opt_index) {
+            case 'h':
+                hash_size = atoi(optarg);
+                InitHashTable(pos->HashTable, hash_size);
+                break;
+            case 's':
+                syzygypath = optarg;
+                EngineOptions->use_TBs = 1;
+                strcpy(EngineOptions->EGTB_PATH, syzygypath);
+                InitTBs(EngineOptions->EGTB_PATH);
+                break;
+            case 'b':
+                bookname = optarg;
+                strcpy(EngineOptions->BookName, bookname);
+                printf("Using opening book: %s\n", bookname);
+                InitPolyBook();
+                break;
+            case 'm':
+                mode = optarg;
+                if (!strcmp(mode, "uci")) {
+                    Uci_Loop(pos, info);
+                    if (info->quit == TRUE) {
+                        free(pos->HashTable->pTable);
+                        CleanPolyBook();
+                        return 0;
+                    }
+                }
+                if(!strcmp(mode, "xboard")) {
+                    XBoard_Loop(pos, info);
+                    if (info->quit == TRUE) {
+                        free(pos->HashTable->pTable);
+                        CleanPolyBook();
+                        return 0;
+                    }
+                }
+            case ':':
+                fprintf(stderr, "Option -%c got a bad value!\n", optopt);
+                break;
+            case '?':
+                fprintf(stderr, "Unrecognized option: '-%c'\n", optopt);
+                return -1;
+            default:
+                strcpy(EngineOptions->BookName, "bookfish.bin");
+                printf("Using default opening book (Bookfish.bin)\n");
+                InitPolyBook();
+                InitHashTable(pos->HashTable, 64);
+                strcpy(EngineOptions->EGTB_PATH, "syzygy/");
+                break;
         }
     }
 
+    strcpy(EngineOptions->BookName, "bookfish.bin");
+    printf("Using default opening book (Bookfish.bin)\n");
     InitPolyBook();
-
-    /*for(ArgNum = 0; ArgNum < argc; ++ArgNum) {
-        if(strncmp(argv[ArgNum], "NoBook", 6) == 0) {
-            EngineOptions->UseBook = FALSE;
-            printf("Opening Book Off!");
-        }
-    }*/
-
+    InitHashTable(pos->HashTable, 64);
+    strcpy(EngineOptions->EGTB_PATH, "syzygy/");
     printf("Welcome to SpaceDog! Type 'dog' to play in console mode. \n\n");
     printf("SpaceDog > ");
 
