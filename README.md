@@ -10,7 +10,21 @@ My ultimate goal for SpaceDog isn't to compete with the big engines, but to make
 Eventually I hope to branch out and add support for neural network evaluations, and support for my favourite chess variants.
 
 ## Documentation
-### Starting SpaceDog
+### The Basics
+SpaceDog is a UCI/XBoard chess engine, meaning that you will need a chess GUI like Arena or similar to get the best use out of it.  You can also run SpaceDog directly on the command line in console mode, and enter your moves manually in long algebraic notation.
+The easiest way to use SpaceDog is to import it into your favourite UCI chess GUI and use the command line options below to let the GUI start SpaceDog directly in UCI mode with reasonable settings.
+### Command Line Options
+When running SpaceDog, you can use four different command line options to start the engine immediately in console, UCI or XBoard mode with key parameters already set:
+
+* -h [hash size in MB]: set the size of the hash file (in megabytes)
+* -b [book name]: set the opening book to the given file and initialise it
+* -s [path to Syzygy bases]: set the Syzygy tablebase path and initialise the tablebases
+* -m [uci/xboard/console]: start SpaceDog directly in UCI, XBoard or console mode
+
+So, for example, typing _SpaceDog.exe -h 256 -b bookfish.bin -s syzygy -m uci_ will set the hash to 256MB, load the opening book 'bookfish.bin', initialise tablebases in the folder 'syzygy', and then jump straight into UCI mode. If you don't specify a mode, or start SpaceDog without any arguments, it will go to the main menu of previous releases with the default 64MB hash and opening book.  _Please make sure the -m argument is used last_, otherwise the hash setting might not work correctly.
+
+Note: If you only use the 'mode' command-line switch without the hash size option, UCI/XBoard mode will start without initialising the hash, so please do so with the appropriate UCI/XBoard/console commands.
+### Other Command Line Options
 SpaceDog can use opening books in Polyglot format (.bin file extension).  You can choose your opening book options when you start SpaceDog from the command line as follows:
 * Type _[executable name] NoBook_ to turn off the opening book completely
 * Type _[executable name] BookName [opening book filename]_ to read a Polyglot opening book of your choosing
