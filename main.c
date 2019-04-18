@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "defs.h"
+#include "chess960.h"
 
 #define fen1 "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
 #define fen2 "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
@@ -38,6 +39,7 @@ int main(int argc, char *argv[]) {
     EngineOptions->SanMode = 0;
     EngineOptions->summary = 0;
     EngineOptions->use_TBs = 0;
+    EngineOptions->variant_960 = 0;
 
     int opt_index = 0;
     int hash_size = 0;
@@ -60,6 +62,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'b':
                 bookname = optarg;
+                EngineOptions->UseBook = TRUE;
                 strcpy(EngineOptions->BookName, bookname);
                 printf("Using opening book: %s\n", bookname);
                 InitPolyBook();

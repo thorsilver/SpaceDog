@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#include "chess960.h"
 //#include <jmorecfg.h>
 
 #define MAX_HASH 1024
@@ -28,6 +29,7 @@ exit(1);}
 #endif
 
 typedef unsigned long long U64;
+//typedef uint64_t U64;
 
 #define NAME "SpaceDog 0.97.7"
 #define BRD_SQ_NUM 120
@@ -37,6 +39,8 @@ typedef unsigned long long U64;
 #define MAXDEPTH 64
 
 #define START_FEN  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define START_FIAN  "bnrqkrnb/pppppppp/8/8/8/8/PPPPPPPP/BNRQKRNB w - - 0 1"
+#define START_TRANSPO  "rbnqknbr/pppppppp/8/8/8/8/PPPPPPPP/RBNQKNBR w KQkq - 0 1"
 #define FEN_LOG_FILE "fens.txt"
 #define TEX_GAME_LOG "game_record.tex"
 #define SAN_GAME_LOG "game_record.pgn"
@@ -119,8 +123,11 @@ typedef struct {
     int fiftyMove;
     int ply;
     int hisPly;
-
     int castlePerm;
+    int shortCastle960W;
+    int longCastle960W;
+    int shortCastle960B;
+    int longCastle960B;
 
     //int texLog;
 
@@ -179,6 +186,8 @@ typedef struct {
     int SanMode;
     int summary;
     int use_TBs;
+    int variant_960;
+    int chess960_startpos;
     char EGTB_PATH[50];
     int TB_PROBE_DEPTH;
 } S_OPTIONS;
@@ -284,6 +293,7 @@ extern U64 WhitePassedMask[64];
 extern U64 IsolatedMask[64];
 
 extern S_OPTIONS EngineOptions[1];
+extern uint64_t kpkTable[2][64*32];
 
 /* FUNCTIONS */
 
@@ -311,6 +321,7 @@ extern void PrintBoard(const S_BOARD *pos);
 extern void UpdateListsMaterial(S_BOARD *pos);
 extern int CheckBoard(const S_BOARD *pos);
 extern void MirrorBoard(S_BOARD *pos);
+extern void Check960Castling(S_BOARD *pos);
 
 // attack.c
 extern int SqAttacked(const int sq, const int side, const S_BOARD *pos);
@@ -398,5 +409,11 @@ extern void ListBookMoves(U64 polyKey);
 extern int GetBookMove(S_BOARD *board);
 extern void InitPolyBook();
 extern void CleanPolyBook();
+
+// endgames
+extern int kpkProbe(int side, int wKing, int wPawn, int bKing);
+extern int kpkGenerate(void);
+extern int kpkSelfCheck(void);
+extern int pfkpkTests(void);
 
 #endif //VICE_CHESS_DEFS_H

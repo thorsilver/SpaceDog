@@ -230,7 +230,8 @@ void GenerateAllMoves(const S_BOARD *pos, S_MOVELIST *list) {
             }
         }
 
-        if(pos->castlePerm & WKCA) {
+        // Update castling movegen for Chess960
+        if((pos->castlePerm & WKCA) && EngineOptions->variant_960 == 0) {
             if(pos->pieces[F1] == EMPTY && pos->pieces[G1] == EMPTY) {
                 if(!SqAttacked(E1,BLACK,pos) && !SqAttacked(F1,BLACK,pos) ) {
                     AddQuietMove(pos, MOVE(E1, G1, EMPTY, EMPTY, MFLAGCA), list);
@@ -238,7 +239,22 @@ void GenerateAllMoves(const S_BOARD *pos, S_MOVELIST *list) {
             }
         }
 
-        if(pos->castlePerm & WQCA) {
+        if(pos->castlePerm & WQCA && EngineOptions->variant_960 == 0) {
+            if(pos->pieces[D1] == EMPTY && pos->pieces[C1] == EMPTY && pos->pieces[B1] == EMPTY) {
+                if(!SqAttacked(E1,BLACK,pos) && !SqAttacked(D1,BLACK,pos) ) {
+                    AddQuietMove(pos, MOVE(E1, C1, EMPTY, EMPTY, MFLAGCA), list);
+                }
+            }
+        }
+        if((pos->castlePerm & WKCA) && EngineOptions->variant_960 == 1) {
+            if(pos->pieces[F1] == EMPTY && pos->pieces[G1] == EMPTY) {
+                if(!SqAttacked(E1,BLACK,pos) && !SqAttacked(F1,BLACK,pos) ) {
+                    AddQuietMove(pos, MOVE(E1, G1, EMPTY, EMPTY, MFLAGCA), list);
+                }
+            }
+        }
+
+        if(pos->castlePerm & WQCA && EngineOptions->variant_960 == 1) {
             if(pos->pieces[D1] == EMPTY && pos->pieces[C1] == EMPTY && pos->pieces[B1] == EMPTY) {
                 if(!SqAttacked(E1,BLACK,pos) && !SqAttacked(D1,BLACK,pos) ) {
                     AddQuietMove(pos, MOVE(E1, C1, EMPTY, EMPTY, MFLAGCA), list);
@@ -276,8 +292,8 @@ void GenerateAllMoves(const S_BOARD *pos, S_MOVELIST *list) {
             }
         }
 
-        // castling
-        if(pos->castlePerm &  BKCA) {
+        // Update castling for Chess960
+        if(pos->castlePerm & BKCA && EngineOptions->variant_960 == 0) {
             if(pos->pieces[F8] == EMPTY && pos->pieces[G8] == EMPTY) {
                 if(!SqAttacked(E8,WHITE,pos) && !SqAttacked(F8,WHITE,pos) ) {
                     AddQuietMove(pos, MOVE(E8, G8, EMPTY, EMPTY, MFLAGCA), list);
@@ -285,7 +301,22 @@ void GenerateAllMoves(const S_BOARD *pos, S_MOVELIST *list) {
             }
         }
 
-        if(pos->castlePerm &  BQCA) {
+        if(pos->castlePerm & BQCA && EngineOptions->variant_960 == 0) {
+            if(pos->pieces[D8] == EMPTY && pos->pieces[C8] == EMPTY && pos->pieces[B8] == EMPTY) {
+                if(!SqAttacked(E8,WHITE,pos) && !SqAttacked(D8,WHITE,pos) ) {
+                    AddQuietMove(pos, MOVE(E8, C8, EMPTY, EMPTY, MFLAGCA), list);
+                }
+            }
+        }
+        if(pos->castlePerm & BKCA && EngineOptions->variant_960 == 1) {
+            if(pos->pieces[F8] == EMPTY && pos->pieces[G8] == EMPTY) {
+                if(!SqAttacked(E8,WHITE,pos) && !SqAttacked(F8,WHITE,pos) ) {
+                    AddQuietMove(pos, MOVE(E8, G8, EMPTY, EMPTY, MFLAGCA), list);
+                }
+            }
+        }
+
+        if(pos->castlePerm & BQCA && EngineOptions->variant_960 == 1) {
             if(pos->pieces[D8] == EMPTY && pos->pieces[C8] == EMPTY && pos->pieces[B8] == EMPTY) {
                 if(!SqAttacked(E8,WHITE,pos) && !SqAttacked(D8,WHITE,pos) ) {
                     AddQuietMove(pos, MOVE(E8, C8, EMPTY, EMPTY, MFLAGCA), list);

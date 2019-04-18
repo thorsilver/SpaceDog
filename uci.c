@@ -122,10 +122,13 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
     printf("option name Hash type spin default 64 min 4 max %d\n",MAX_HASH);
     printf("option name Book type check default true\n");
     printf("option name SyzygyPath type string default syzygy\n");
+    printf("option name BookName type string default bookfish.bin\n");
+    //printf("option name UCI_Chess960 type check default false\n");
     printf("uciok\n");
 
     int MB = 64;
     char tbPath[50];
+    char bookName[50];
 
     while (TRUE) {
         memset(&line[0], 0, sizeof(line));
@@ -165,11 +168,17 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("Set Hash to %d MB\n",MB);
             InitHashTable(pos->HashTable, MB);
         } else if (!strncmp(line, "setoption name SyzygyPath value ", 32)) {
-            sscanf(line,"%*s %*s %*s %*s %s", tbPath);
+            sscanf(line, "%*s %*s %*s %*s %s", tbPath);
             EngineOptions->use_TBs = 1;
             strcpy(EngineOptions->EGTB_PATH, tbPath);
             printf("Using Syzygy file path: %s\n", EngineOptions->EGTB_PATH);
             InitTBs(tbPath);
+        } else if (!strncmp(line, "setoption name BookName value ", 30)) {
+            sscanf(line, "%*s %*s %*s %*s %s", bookName);
+            EngineOptions->UseBook = TRUE;
+            strcpy(EngineOptions->BookName, bookName);
+            printf("Using opening book: %s\n", bookName);
+            InitPolyBook();
         } else if (!strncmp(line, "setoption name Book value ", 26)) {
             char *ptrTrue = NULL;
             ptrTrue = strstr(line, "true");

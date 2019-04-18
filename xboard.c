@@ -4,6 +4,8 @@
 
 // xboard.c
 
+#include <stdlib.h>
+#include <time.h>
 #include "stdio.h"
 #include "defs.h"
 #include "string.h"
@@ -287,9 +289,11 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
     int depth = MAXDEPTH, movetime = 3000, hashsize = 64;
     int engineSide = BOTH;
     int move = NOMOVE;
-    char inBuf[80], command[80], syzygypath[50];
-    InitHashTable(pos->HashTable, hashsize);
+    int pos960;
+    char inBuf[80], command[80], syzygypath[50], openingBook[50];
+    //InitHashTable(pos->HashTable, hashsize);
 
+    srand(time(0));
     engineSide = BLACK;
     ParseFen(START_FEN, pos);
     //EngineOptions->SanMode = 1;
@@ -329,7 +333,11 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("print - show board\n");
             printf("post - show thinking\n");
             printf("nopost - do not show thinking\n");
-            printf("new - start new game\n");
+            printf("new - start new FIDE chess game\n");
+            printf("new960 - start new Chess960 game\n");
+            printf("newfianchetto - start new Fianchetto Chess game\n");
+            printf("newtranspo - start new Transposition Chess game\n");
+            printf("setfrc [position number] - start new Chess960 game with the given start position\n");
             printf("go - set computer thinking\n");
             printf("depth x - set depth to x\n");
             printf("hash x - set hash table size to x MB\n");
@@ -337,13 +345,16 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("view - show current depth and movetime settings\n");
             printf("setboard x - set position to fen x\n");
             printf("texlog - write game record in TeX and initialise the file\n");
-            printf("newtex - write game record in TeX in new format");
+            printf("newtex - write game record in TeX in new format\n");
             printf("pgnlog - write game record in PGN and initialise the file\n");
             printf("startsum - start fancy summary file in TeX\n");
             printf("endtex - write closing statement to TeX game record\n");
             printf("endsum - complete and close fancy summary in TeX\n");
             printf("usetb - use Syzygy tablebases (in folder \"syzygy\")\n");
+            printf("setbook [filename] - use opening book [filename]\n");
+            printf("KPK Bitbase test - test generation and correctness of KPK bitbase\n");
             printf("** note ** - to reset time and depth, set to 0\n");
+            printf("*** frc [position number] - retrieve Chess960 position\n");
             printf("enter moves using b7b8q notation\n\n\n");
             continue;
         }
@@ -425,8 +436,39 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
         if(!strcmp(command, "new")) {
             ClearHashTable(pos->HashTable);
+            EngineOptions->variant_960 = 0;
             engineSide = BLACK;
             ParseFen(START_FEN, pos);
+            continue;
+        }
+
+        if(!strcmp(command, "newfianchetto")) {
+            ClearHashTable(pos->HashTable);
+            EngineOptions->variant_960 = 0;
+            engineSide = BLACK;
+            ParseFen(START_FIAN, pos);
+            continue;
+        }
+
+        if(!strcmp(command, "newtranspo")) {
+            ClearHashTable(pos->HashTable);
+            EngineOptions->variant_960 = 0;
+            engineSide = BLACK;
+            ParseFen(START_TRANSPO, pos);
+            continue;
+        }
+
+        if(!strcmp(command, "new960")){
+            ClearHashTable(pos->HashTable);
+            EngineOptions->variant_960 = 1;
+            engineSide = BLACK;
+            pos960 = rand() % 960;
+            EngineOptions->chess960_startpos = pos960;
+            ParseFen(chess960fens[pos960], pos);
+            Check960Castling(pos);
+            printf("Chess960 Mode Set!!\n\n");
+            printf("Starting position ID: %d\n\n", pos960);
+            PrintBoard(pos);
             continue;
         }
 
@@ -481,6 +523,54 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             InitTBs(EngineOptions->EGTB_PATH);
             continue;
         }
+
+        if(!strcmp(command, "setbook")) {
+            sscanf(inBuf, "setbook %s", openingBook);
+            EngineOptions->UseBook = TRUE;
+            strcpy(EngineOptions->BookName, openingBook);
+            printf("Using opening book: %s\n", openingBook);
+            InitPolyBook();
+            continue;
+        }
+
+        if(!strcmp(command, "kpktest")) {
+            pfkpkTests();
+            continue;
+        }
+
+        if(!strcmp(command, "frc")) {
+            sscanf(inBuf, "frc %d", &pos960);
+            if(pos960 <=0) pos960 = 0;
+            if(pos960 >= 960) pos960 = 959;
+            printf("Chess960 FEN String: %s", chess960fens[pos960]);
+            continue;
+        }
+
+        if(!strcmp(command, "setfrc")){
+            sscanf(inBuf, "setfrc %d", &pos960);
+            if(pos960 <=0) pos960 = 0;
+            if(pos960 >= 960) pos960 = 959;
+            engineSide = BLACK;
+            EngineOptions->variant_960 = 1;
+            EngineOptions->chess960_startpos = pos960;
+            ParseFen(chess960fens[pos960], pos);
+            Check960Castling(pos);
+            printf("Chess960 Mode Set!!\n\n");
+            printf("Starting position ID: %d\n\n", pos960);
+            PrintBoard(pos);
+            //Check960Castling(pos960, pos);
+            //printf("%c\n", chess960fens[EngineOptions->chess960_startpos][46]);
+            continue;
+        }
+
+        /*if(!strcmp(command, "genfrc")){
+            EngineOptions->variant_960 = 1;
+            for (int p = 0; p < 960; p++) {
+                ParseFen(chess960fens[p], pos);
+                Check960Castling(p, pos);
+            }
+            continue;
+        }*/
 
         move = ParseMove(inBuf, pos);
         if(move == NOMOVE) {

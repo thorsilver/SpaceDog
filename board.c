@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include <ctype.h>
 #include "defs.h"
 #define SQOFFBOARD(sq) (FilesBrd[(sq)]==OFFBOARD)
 
@@ -201,20 +202,67 @@ int ParseFen(char *fen, S_BOARD *pos) {
     pos->side = (*fen == 'w') ? WHITE : BLACK;
     fen += 2;
 
-    for (i = 0; i < 4; i++) {
-        if (*fen == ' ') {
-            break;
-        }
-        switch(*fen) {
-            case 'K': pos->castlePerm |= WKCA; break;
-            case 'Q': pos->castlePerm |= WQCA; break;
-            case 'k': pos->castlePerm |= BKCA; break;
-            case 'q': pos->castlePerm |= BQCA; break;
-            default:	     break;
+    if(EngineOptions->variant_960 == 0) {
+        for (i = 0; i < 4; i++) {
+            if (*fen == ' ') {
+                break;
+            }
+            switch (*fen) {
+                case 'K':
+                    pos->castlePerm |= WKCA;
+                    break;
+                case 'Q':
+                    pos->castlePerm |= WQCA;
+                    break;
+                case 'k':
+                    pos->castlePerm |= BKCA;
+                    break;
+                case 'q':
+                    pos->castlePerm |= BQCA;
+                    break;
+                default:
+                    break;
+            }
+            fen++;
         }
         fen++;
     }
-    fen++;
+
+    /*if(EngineOptions->variant_960 == 1) {
+        for (i = 0; i < 4; i++) {
+            if (*fen == ' ') {
+                break;
+            } else if (*fen == chess960fens[EngineOptions->chess960_startpos][46]){
+                pos->castlePerm |= WKCA;
+            } else if (*fen == chess960fens[EngineOptions->chess960_startpos][47]) {
+                pos->castlePerm |= WQCA;
+            } else if (*fen == chess960fens[EngineOptions->chess960_startpos][48]) {
+                pos->castlePerm |= BKCA;
+            } else if (*fen == chess960fens[EngineOptions->chess960_startpos][49]) {
+                pos->castlePerm |= BQCA;
+            }
+            fen++;
+        }
+        fen++;
+    }*/
+
+    if(EngineOptions->variant_960 == 1) {
+        for (i = 0; i < 4; i++) {
+            if (*fen == ' ') {
+                break;
+            } else if (*fen >= 'C' && *fen <= 'H' && i == 0) {
+                pos->castlePerm |= WKCA;
+            } else if (*fen >= 'A' && *fen <= 'F' && i == 1) {
+                pos->castlePerm |= WQCA;
+            } else if (*fen >= 'c' && *fen <= 'h' && i == 2) {
+                pos->castlePerm |= BKCA;
+            } else if (*fen >= 'a' && *fen <= 'f' && i == 3) {
+                pos->castlePerm |= BQCA;
+            }
+            fen++;
+        }
+        fen++;
+    }
 
     ASSERT(pos->castlePerm>=0 && pos->castlePerm <= 15);
 
@@ -283,7 +331,7 @@ char *printFEN(const S_BOARD *pos) {
             sprintf(result + strIndex, " %c ", pos->side == WHITE ? 'w' : 'b');
     if (pos->castlePerm == 0) {
         result[strIndex++] = '-';
-    } else {
+    } else if (pos->castlePerm != 0 && EngineOptions->variant_960 == 0){
         if (pos->castlePerm & WKCA)
             result[strIndex++] = 'K';
         if (pos->castlePerm & WQCA)
@@ -292,6 +340,15 @@ char *printFEN(const S_BOARD *pos) {
             result[strIndex++] = 'k';
         if (pos->castlePerm & BQCA)
             result[strIndex++] = 'q';
+    } else if (pos->castlePerm != 0 && EngineOptions->variant_960 == 1){
+        if (pos->castlePerm & WKCA)
+            result[strIndex++] = toupper('a' + FilesBrd[pos->longCastle960W]);
+        if (pos->castlePerm & WQCA)
+            result[strIndex++] = toupper('a' + FilesBrd[pos->shortCastle960W]);
+        if (pos->castlePerm & BKCA)
+            result[strIndex++] = 'a' + FilesBrd[pos->longCastle960B];
+        if (pos->castlePerm & BQCA)
+            result[strIndex++] = 'a' + FilesBrd[pos->shortCastle960B];
     }
     // Check if pos->hisPly / 2 + 1 is the correct formula
     strIndex += sprintf(result + strIndex, " %s %d %d", printSquare(pos->enPas),
@@ -429,4 +486,51 @@ void MirrorBoard(S_BOARD *pos) {
     UpdateListsMaterial(pos);
 
     ASSERT(CheckBoard(pos));
+}
+
+void Check960Castling(S_BOARD *pos) {
+    int rookSquares[4];
+
+    for (int rookNum = 0; rookNum < pos->pceNum[wR]; ++rookNum) {
+        rookSquares[rookNum] = pos->pList[wR][rookNum];
+    }
+    for (int rookNum = 0; rookNum < pos->pceNum[bR]; ++rookNum) {
+        rookSquares[rookNum+2] = pos->pList[bR][rookNum];
+    }
+    //int shortW, longW, kingSqWhite, kingSqBlack, shortB, longB;
+    pos->shortCastle960W = rookSquares[0];
+    pos->longCastle960W = rookSquares[1];
+    pos->shortCastle960B = rookSquares[2];
+    pos->longCastle960B = rookSquares[3];
+    //shortW = rookSquares[0];
+    //longW = rookSquares[1];
+    //shortB = rookSquares[2];
+    //longB = rookSquares[3];
+    /*UpdateListsMaterial(pos);
+    //kingSqBlack = pos->KingSq[BLACK];
+    //kingSqWhite = pos->KingSq[WHITE];
+    printf("Assigned castling squares!\n");
+    castleRights[shortW] = 7;
+    printf("WSC! ");
+    //castleRights[kingSqWhite] = 3;
+    printf("KSQ White! ");
+    castleRights[longW] = 11;
+    printf("WLC! ");
+    castleRights[shortB] = 13;
+    printf("BSC! ");
+    //castleRights[kingSqBlack] = 12;
+    printf("KSQ Black! ");
+    castleRights[longB] = 14;
+    printf("BLC!\n");*/
+
+
+    // Various funcs for generating FRC castling rights...
+
+    //printf("White Rook 1: %d White Rook 2: %d\n", rookSquares[0], rookSquares[1]);
+    //printf("Black Rook 1: %d Black Rook 2: %d\n\n", rookSquares[2], rookSquares[3]);
+    //printf("%d: %s --> %c%c%c%c", fen960, printFEN(pos), toupper('a' + FilesBrd[rookSquares[1]]),
+          // toupper('a' + FilesBrd[rookSquares[0]]), 'a' + FilesBrd[rookSquares[1]], 'a' + FilesBrd[rookSquares[0]]);
+    //printf("%c%c%c%c - 0 1\",\n", toupper('a' + FilesBrd[rookSquares[1]]),
+           //toupper('a' + FilesBrd[rookSquares[0]]), 'a' + FilesBrd[rookSquares[1]], 'a' + FilesBrd[rookSquares[0]]);
+    //printf("\"%c%c\",\n", 'a' + FilesBrd[rookSquares[1]], 'a' + FilesBrd[rookSquares[0]]);
 }
