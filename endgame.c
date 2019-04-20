@@ -33,6 +33,7 @@
 
 #include <stdbool.h>
 #include <time.h>
+#include "defs.h"
 #include "endgame.h"
 
 
@@ -78,9 +79,90 @@ enum { white, black };
 uint64_t kpkTable[2][64*32];
 static const int kingSteps[] = { N+W, N, N+E, W, E, S+W, S, S+E };
 
+// Drive enemy King towards the edge of the board
+static const int edgePush[64] = {
+        100, 90, 80, 70, 70, 80, 90, 100,
+        90 , 70, 60, 50, 50, 60, 70,  90,
+        80 , 60, 40, 30, 30, 40, 60,  80,
+        70 , 50, 30, 20, 20, 30, 50,  70,
+        70 , 50, 30, 20, 20, 30, 50,  70,
+        80 , 60, 40, 30, 30, 40, 60,  80,
+        90 , 70, 60, 50, 50, 60, 70,  90,
+        100, 90, 80, 70, 70, 80, 90, 100
+};
+
+// Drive King towards the corner of the boards (A1/H8)
+/*static const int cornerPushB[64] = {
+        100, 100, 70, 60, 50, 40, 10,  5,
+        100, 70, 60, 50, 40, 10, 10, 10,
+        70, 60, 50, 40, 10, 10, 10, 40,
+        60, 50, 40, 10, 10, 10, 40, 50,
+        50, 40, 10, 10, 10, 40, 50, 60,
+        40, 10, 10, 10, 40, 50, 60, 70,
+        10, 10, 10, 40, 50, 60, 70, 100,
+        5 , 10, 40, 50, 60, 70, 100, 100
+};*/
+
+static const int cornerPushB[64] = {
+        200, 190, 180, 170, 160, 150, 140, 130,
+        190, 180, 170, 160, 150, 140, 130, 140,
+        180, 170, 155, 140, 140, 125, 140, 150,
+        170, 160, 140, 120, 110, 140, 150, 160,
+        160, 150, 140, 110, 120, 140, 160, 170,
+        150, 140, 125, 140, 140, 155, 170, 180,
+        140, 130, 140, 150, 160, 170, 180, 190,
+        130, 140, 150, 160, 170, 180, 190, 200
+};
+
+static const int cornerPushW[64] = {
+        130, 140, 150, 160, 170, 180, 190, 200,
+        140, 130, 140, 150, 160, 170, 180, 190,
+        150, 140, 125, 140, 140, 155, 170, 180,
+        160, 150, 140, 110, 120, 140, 160, 170,
+        170, 160, 140, 120, 110, 140, 150, 160,
+        180, 170, 155, 140, 140, 125, 140, 150,
+        190, 180, 170, 160, 150, 140, 130, 140,
+        200, 190, 180, 170, 160, 150, 140, 130
+};
+
+/*static const int cornerPushW[64] = {
+        5 ,  10,  40, 50, 60, 70, 100, 100,
+        10,  10,  10, 40, 50, 60, 70,  100,
+        40,  10,  10, 10, 40, 50, 60,  70,
+        50,  40,  10, 10, 10, 40, 50,  60,
+        60,  50,  40, 10, 10, 10, 40,  50,
+        70,  60,  50, 40, 10, 10, 10,  40,
+        100, 70,  60, 50, 40, 10, 10,  10,
+        100, 100, 70, 60, 50, 40, 10,   5
+
+};*/
+
+static const int kingClose[8] = { 0, 0, 100, 70, 50, 30, 10, 0};
+static const int kingFar[8] = { 0, 5, 20, 40, 60, 80, 90, 100 };
+
 /*----------------------------------------------------------------------+
  |      Functions                                                       |
  +----------------------------------------------------------------------*/
+
+int manhattanDistance(int sq1, int sq2) {
+    int file1 = FilesBrd[sq1];
+    int file2 = FilesBrd[sq2];
+    int rank1 = RanksBrd[sq1];
+    int rank2 = RanksBrd[sq2];
+    int rankDist = abs(rank1 - rank2);
+    int fileDist = abs(file1 - file2);
+    return rankDist + fileDist;
+}
+
+int sq_distance(int sq1, int sq2){
+    int file1 = FilesBrd[sq1];
+    int file2 = FilesBrd[sq2];
+    int rank1 = RanksBrd[sq1];
+    int rank2 = RanksBrd[sq2];
+    int rankDist = abs(rank1 - rank2);
+    int fileDist = abs(file1 - file2);
+    return rankDist > fileDist ? rankDist : fileDist;
+}
 
 int kpkProbe(int side, int wKing, int wPawn, int bKing)
 {
@@ -94,6 +176,14 @@ int kpkProbe(int side, int wKing, int wPawn, int bKing)
     int ix = kpIndex(wKing, wPawn);
     int bit = (kpkTable[side][ix] >> bKing) & 1;
     return (side == white) ? bit : -bit;
+}
+
+int kpkProbeBlack(int side, int wKing, int bPawn, int bKing) {
+    int bSide = side ^ 1;
+    int blackKing = mirror_board[wKing];
+    int whiteKing = mirror_board[blackKing];
+    int blackPawn = mirror_board[bPawn];
+    return kpkProbe(bSide, whiteKing, blackPawn, blackKing);
 }
 
 int kpkGenerate(void)
@@ -158,6 +248,7 @@ int kpkGenerate(void)
         }
     } while (changed);
 
+    printf("KPK Bitbase Generated!\n");
     return sizeof kpkTable;
 }
 
@@ -263,4 +354,138 @@ int pfkpkTests(void)
         err = EXIT_FAILURE;
 
     return err;
+}
+
+// Evaluate King + (Queen or Rook) vs King
+int evalKXK(S_BOARD *pos, unsigned strongSide, int piece)
+{
+    unsigned weakSide = strongSide ^ 1;
+    int eval = 0;
+
+    /*// Stalemate detection
+    if (pos->side == weakSide) {
+        S_MOVELIST list[1];
+        GenerateAllMoves(pos,list);
+
+        int MoveNum = 0;
+        int found = 0;
+        for(MoveNum = 0; MoveNum < list->count; ++MoveNum) {
+            if (!MakeMove(pos,list->moves[MoveNum].move))  {
+                continue;
+            }
+            found++;
+            TakeMove(pos);
+            break;
+        }
+        if(found == 0) {
+            return 0;
+        }
+    }*/
+
+    int strongKSq = SQ64(pos->KingSq[strongSide]);
+    int weakKSq = SQ64(pos->KingSq[weakSide]);
+
+    eval = TBWIN + PieceVal[piece] + kingClose[sq_distance(strongKSq, weakKSq)] + edgePush[weakKSq];
+
+    return strongSide == pos->side ? eval : -eval;
+}
+
+// Evaluate King + Pawn vs King (Black side).  Uses PFKPK bitbase.
+int evalBlackKPK(S_BOARD *pos) {
+    int pawnSq;
+    int eval;
+    int kpkResult;
+    int wkSq = SQ64(pos->KingSq[WHITE]);
+    int bkSq = SQ64(pos->KingSq[BLACK]);
+    pawnSq = SQ64(pos->pList[bP][0]);
+
+    kpkResult = kpkProbeBlack(pos->side, wkSq, pawnSq, bkSq);
+    eval = TBWIN + PieceVal[bP] + (8 - RanksBrd[pawnSq]);
+    return (kpkResult * eval);
+}
+
+// Evaluate King + Pawn vs King (White side).  Uses PFKPK bitbase.
+int evalWhiteKPK(S_BOARD *pos) {
+    int pawnSq;
+    int eval;
+    int kpkResult;
+    int wkSq = SQ64(pos->KingSq[WHITE]);
+    int bkSq = SQ64(pos->KingSq[BLACK]);
+    pawnSq = SQ64(pos->pList[wP][0]);
+
+    kpkResult = kpkProbe(pos->side, wkSq, pawnSq, bkSq);
+    eval = TBWIN + PieceVal[wP] + (8 - RanksBrd[pawnSq]);
+    return (kpkResult * eval);
+}
+
+// Evaluate King + Pawn vs King. Uses PFKPK bitbase.
+int evalKPK(S_BOARD *pos, unsigned int strongSide)
+{
+    int pawnSq = 0;
+    int eval = 0;
+    int kpkResult = 0;
+
+    int wkSq = SQ64(pos->KingSq[WHITE]);
+    int bkSq = SQ64(pos->KingSq[BLACK]);
+    if(strongSide == WHITE) {
+        pawnSq = SQ64(pos->pList[wP][0]);
+    } else if(strongSide == BLACK) {
+        pawnSq = SQ64(pos->pList[bP][0]);
+    }
+
+    if(strongSide == WHITE) {
+        kpkResult = kpkProbe(pos->side, wkSq, pawnSq, bkSq);
+        if(kpkResult == 0) {
+            return 0;
+        } else {
+            eval = TBWIN + PieceVal[wP] + RanksBrd[pawnSq];
+        }
+    } else if(strongSide == BLACK) {
+        kpkResult = kpkProbeBlack(pos->side, wkSq, pawnSq, bkSq);
+        if(kpkResult == 0) {
+            return 0;
+        } else {
+            eval = TBWIN + PieceVal[bP] + (8-RanksBrd[pawnSq]);
+            //printf("pawnSQ: %d BK: %d WK: %d kpk: %d eval: %d\n", pawnSq, wkSq, bkSq, kpkResult, eval);
+        }
+    }
+
+    /*if(kpkResult == 0) {
+        return 0;
+    } else if(kpkResult == 1){
+        eval = TBWIN + PieceVal[wP] + RanksBrd[pawnSq];
+    } else if(kpkResult == -1) {
+        eval = TBWIN + PieceVal[bP] + (8 - RanksBrd[pawnSq]);
+    }*/
+    //printf("pawnSQ: %d BK: %d WK: %d kpk: %d eval: %d\n", pawnSq, wkSq, bkSq, kpkResult, eval);
+    return strongSide == pos->side ? eval : -eval;
+}
+
+// Evaluate King + Bishop + Knight vs King
+int evalKBNK(const S_BOARD *pos, int strongSide, int bish_sq)
+{
+    int bish_colour = 0;
+    int eval = 0;
+    //unsigned weakSide = strongSide ^ 1;
+
+    int strongKSq = 0;
+    int weakKSq = 0;
+    if(strongSide == WHITE){
+        strongKSq = SQ64(pos->KingSq[WHITE]);
+        weakKSq = SQ64(pos->KingSq[BLACK]);
+        bish_colour = sq_colors[bish_sq];
+    } else if(strongSide == BLACK) {
+        strongKSq = SQ64(pos->KingSq[BLACK]);
+        weakKSq = SQ64(pos->KingSq[WHITE]);
+        bish_colour = sq_colors[bish_sq];
+    }
+
+    //printf("wkSQ: %d bkSQ: %d wbSQ: %d\n", strongKSq, weakKSq, bish_colour);
+    if(bish_colour == BLACK) {
+        eval = TBWIN + kingClose[sq_distance(strongKSq, weakKSq)] + cornerPushB[weakKSq];
+    } else if(bish_colour == WHITE) {
+        eval = TBWIN + kingClose[sq_distance(strongKSq, weakKSq)] + cornerPushW[weakKSq];
+    }
+
+    return strongSide == pos->side ? eval : -eval;
 }

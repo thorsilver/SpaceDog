@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "defs.h"
 #include "fathom/src/tbprobe.h"
+#include "endgame.h"
 //#include "syzygy.h"
 
 #define RAND_64 	((U64)rand() | \
@@ -209,5 +210,6 @@ void AllInit() {
     InitEvalMasks();
     InitMvvLva();
     //InitPolyBook();
+    kpkGenerate();
 
 }

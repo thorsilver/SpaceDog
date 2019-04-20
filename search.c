@@ -176,39 +176,39 @@ static int Quiescence(int alpha, int beta, S_BOARD *pos, S_SEARCHINFO *info) {
 static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO *info, int DoNull) {
 
     ASSERT(CheckBoard(pos));
-    ASSERT(beta>alpha);
-    ASSERT(depth>=0);
-    if(depth < 0)
+    ASSERT(beta > alpha);
+    ASSERT(depth >= 0);
+    if (depth < 0)
         depth = 0;
-    if(depth <= 0) {
+    if (depth <= 0) {
         return Quiescence(alpha, beta, pos, info);
         // return EvalPosition(pos);
     }
 
-    if(( info->nodes & 2047 ) == 0) {
+    if ((info->nodes & 2047) == 0) {
         CheckUp(info);
     }
 
     info->nodes++;
 
-    if((IsRepetition(pos) || pos->fiftyMove >= 100) && pos->ply) {
+    if ((IsRepetition(pos) || pos->fiftyMove >= 100) && pos->ply) {
         return 0;
     }
 
-    if(pos->ply > MAXDEPTH - 1) {
+    if (pos->ply > MAXDEPTH - 1) {
         return EvalPosition(pos);
     }
 
-    int InCheck = SqAttacked(pos->KingSq[pos->side],pos->side^1,pos);
+    int InCheck = SqAttacked(pos->KingSq[pos->side], pos->side ^ 1, pos);
 
-    if(InCheck == TRUE) {
+    if (InCheck == TRUE) {
         depth++;
     }
 
     int Score = -INFINITE;
     int PvMove = NOMOVE;
 
-    if( ProbeHashEntry(pos, &PvMove, &Score, alpha, beta, depth) == TRUE ) {
+    if (ProbeHashEntry(pos, &PvMove, &Score, alpha, beta, depth) == TRUE) {
         pos->HashTable->cut++;
         return Score;
     }
@@ -222,7 +222,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
     char *FEN;
     int WDL;
     // Probe WDL tables
-    if(EngineOptions->use_TBs == 1 && materialTotal <= TB_LARGEST) {
+    if (EngineOptions->use_TBs == 1 && materialTotal <= TB_LARGEST) {
         FEN = printFEN(pos);
         WDL = tbProbeWDL(FEN);
         if (WDL != TB_RESULT_FAILED) {
@@ -245,38 +245,46 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
                     break;
             }
             //TakeMove(pos);
-            if(Score == TBWIN) {
+            if (Score == TBWIN) {
                 StoreHashEntry(pos, PvMove, Score, HFEXACT, depth);
             }
             return Score;
         }
     }
 
+    /*if(materialTotal == 4 && (pos->pceNum[wB] == 1) && (pos->pceNum[wN] == 1)) {
+        int strongKSq = SQ64(pos->KingSq[WHITE]);
+        int weakKSq = SQ64(pos->KingSq[BLACK]);
+        int bishSq = SQ64(pos->pList[wB][0]);
+        printf("%d %d %d\n", strongKSq, weakKSq, bishSq);
+    }*/
+
     int eval = EvalPosition(pos);
 
+
     // Razoring
-    if (   !PvMove && !InCheck
-           &&  depth <= RazorDepth
-           &&  eval + RazorMargin < alpha) {
+    if (!PvMove && !InCheck
+        && depth <= RazorDepth
+        && eval + RazorMargin < alpha) {
         info->pruned++;
         return Quiescence(alpha, beta, pos, info);
     }
 
     // Beta Pruning
-    if (   !PvMove
-           && !InCheck
-           &&  depth <= BetaPruningDepth
-           &&  eval - BetaMargin * depth > beta) {
+    if (!PvMove
+        && !InCheck
+        && depth <= BetaPruningDepth
+        && eval - BetaMargin * depth > beta) {
         info->pruned++;
         return eval;
     }
 
     // Null Move Pruning
-    if( DoNull && !InCheck && pos->ply && (pos->bigPce[pos->side] > 0) && depth >= 4) {
+    if (DoNull && !InCheck && pos->ply && (pos->bigPce[pos->side] > 0) && depth >= 4) {
         MakeNullMove(pos);
-        Score = -AlphaBeta( -beta, -beta + 1, depth-4, pos, info, FALSE);
+        Score = -AlphaBeta(-beta, -beta + 1, depth - 4, pos, info, FALSE);
         TakeNullMove(pos);
-        if(info->stopped == TRUE) {
+        if (info->stopped == TRUE) {
             return 0;
         }
 
@@ -285,6 +293,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD *pos, S_SEARCHINFO 
             return beta;
         }
     }
+
 
     S_MOVELIST list[1];
     GenerateAllMoves(pos,list);

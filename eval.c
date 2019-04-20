@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include "endgame.h"
 #include "defs.h"
 #include "eval.h"
 
@@ -92,6 +93,7 @@ int EvalPosition(S_BOARD *pos) {
     S_EVAL eval;
     static const S_EVAL emptyEval;
     eval = emptyEval;
+    int eg_eval = 0;
 
     int pce;
     int pceNum;
@@ -99,6 +101,63 @@ int EvalPosition(S_BOARD *pos) {
     int eval_mg, eval_eg, final_eval;
     int total_material = pos->material[WHITE] + pos->material[BLACK] - 100000;
     eval.matScore = pos->material[WHITE] - pos->material[BLACK];
+
+    //----------------------------------------------------
+    // ENDGAME RECOGNISERS
+    //----------------------------------------------------
+    int materialNum = 0;
+    int i;
+    for (i = 0; i < 13; i++) {
+        materialNum += pos->pceNum[i];
+    }
+
+    // Detect KQK
+    if(materialNum == 3 && (pos->pceNum[wQ] == 1)){
+        eg_eval = evalKXK(pos, WHITE, wQ);
+        return eg_eval;
+    } else if(materialNum == 3 && (pos->pceNum[bQ] == 1)){
+        eg_eval = evalKXK(pos, BLACK, bQ);
+        return eg_eval;
+    }
+    // Detect KRK
+    if(materialNum == 3 && (pos->pceNum[wR] == 1)) {
+        eg_eval = evalKXK(pos, WHITE, wR);
+        return eg_eval;
+    } else if(materialNum == 3 && (pos->pceNum[bR] == 1)) {
+        eg_eval = evalKXK(pos, BLACK, bR);
+        return eg_eval;
+    }
+
+    // Detect KPK
+    if(materialNum == 3 && (pos->pceNum[wP] == 1)) {
+        //eg_eval = evalKPK(pos, WHITE);
+        eg_eval = evalWhiteKPK(pos);
+        return eg_eval;
+    } else if(materialNum == 3 && (pos->pceNum[bP] == 1)) {
+        //printf("Found black KPK endgame!\n");
+        //eg_eval = evalKPK(pos, BLACK);
+        eg_eval = evalBlackKPK(pos);
+        return eg_eval;
+    }
+
+    // Detect KBK/KNK draws
+    if(materialNum == 3 && (pos->pceNum[wB] == 1 || pos->pceNum[bB] == 1)) {
+        return 0;
+    }
+    if(materialNum == 3 && (pos->pceNum[wN] == 1 || pos->pceNum[bN] == 1)) {
+        return 0;
+    }
+    // Detect KBNK endgames
+    if((materialNum == 4) && (pos->pceNum[wB] == 1) && (pos->pceNum[wN] == 1)) {
+        //printf("Found my way to white KBNK eval!\n");
+        eg_eval = evalKBNK(pos, WHITE, SQ64(pos->pList[wB][0]));
+        return eg_eval;
+    } else if ((materialNum == 4) && (pos->pceNum[bB] == 1) && (pos->pceNum[bN] == 1)) {
+        printf("Using black KBNK eval!\n");
+        eg_eval = evalKBNK(pos, BLACK, SQ64(pos->pList[bB][0]));
+        return eg_eval;
+    }
+
 
     if(!pos->pceNum[wP] && !pos->pceNum[bP] && MaterialDraw(pos) == TRUE) {
         return 0;
