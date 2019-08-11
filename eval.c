@@ -83,6 +83,121 @@ int CheckMob(S_BOARD *pos, int side) {
     return mobScore;
 }
 
+int KingSafetyWhite(S_BOARD *pos) {
+    int kingSafety = 0, castled = 0, castleQueen = 0, castleKing = 0, pawnScore = 0, positionFeatures = 0;
+    int KingRank = RanksBrd[pos->KingSq[WHITE]];
+    int KingFile = FilesBrd[pos->KingSq[WHITE]];
+
+    // Check castling
+    if(!(pos->castlePerm & WQCA) && (pos->hisPly <= 20) && (KingFile == 0 || KingFile == 1 || KingFile == 2)
+       && (KingRank== 0)){
+        castleQueen = 1;
+        castled += 30; //castled queenside
+    } else if(!(pos->castlePerm & WKCA) && (pos->hisPly <= 20) && (KingFile == 5 || KingFile == 6 || KingFile == 7)
+              && (KingRank == 0)){
+        castleKing = 1;
+        castled += 30; //castled kingside
+    } else if((pos->castlePerm & WKCA) && (pos->castlePerm & WQCA)){
+        castled -= 10;
+    }
+
+    // Check for pawns protecting castled King
+    if(castleQueen && (pos->pceNum[wP] > 0)){
+        if(pos->pieces[C2] == wP){
+            pawnScore += 8;
+        }
+        if(pos->pieces[B2] == wP){
+            pawnScore += 12;
+        }
+        if(pos->pieces[A2] == EMPTY){
+            positionFeatures += 5; // King escape hole!
+        }
+        if(pos->pieces[A3] == wP){
+            pawnScore += 5;
+        }
+    } else if(castleKing && (pos->pceNum[wP] > 0)){
+        if(pos->pieces[F2] == wP){
+            pawnScore += 8;
+        }
+        if(pos->pieces[G2] == wP){
+            pawnScore += 12;
+        }
+        if(pos->pieces[H2] == EMPTY){
+            positionFeatures += 5; // King escape hole!
+        }
+        if(pos->pieces[H3] == wP){
+            pawnScore += 5;
+        }
+    }
+
+    // Fianchetto positions are OK alternatives
+    if(castleQueen && (pos->pieces[B2] == wB) && (pos->pieces[B3] == wP)){
+        positionFeatures += 12;
+    } else if(castleKing && (pos->pieces[G2] == wB) && (pos->pieces[G3] == wP)){
+        positionFeatures += 12;
+    }
+    kingSafety = castled + pawnScore + positionFeatures;
+    return kingSafety;
+}
+
+int KingSafetyBlack(S_BOARD *pos) {
+    int kingSafety = 0, castled = 0, castleQueen = 0, castleKing = 0, pawnScore = 0, positionFeatures = 0;
+    int KingRank = RanksBrd[pos->KingSq[BLACK]];
+    int KingFile = FilesBrd[pos->KingSq[BLACK]];
+
+    // Check castling
+    if(!(pos->castlePerm & BQCA) && (pos->hisPly <= 20) && (KingFile == 0 || KingFile == 1 || KingFile == 2)
+       && (KingRank == 7)){
+        castleQueen = 1;
+        castled += 30; //castled queenside
+    } else if(!(pos->castlePerm & BKCA) && (pos->hisPly <= 20) && (KingFile == 5 || KingFile == 6 || KingFile == 7)
+              && (KingRank == 7)){
+        castleKing = 1;
+        castled += 30; //castled kingside
+    } else if((pos->castlePerm & BKCA) && (pos->castlePerm & BQCA)){
+        castled -= 10;
+    }
+
+    // Check for pawns protecting castled King
+    if(castleQueen && (pos->pceNum[bP] > 0)){
+        if(pos->pieces[C7] == bP){
+            pawnScore += 8;
+        }
+        if(pos->pieces[B7] == bP){
+            pawnScore += 12;
+        }
+        if(pos->pieces[A7] == EMPTY){
+            positionFeatures += 5; // King escape hole!
+        }
+        if(pos->pieces[A6] == bP){
+            pawnScore += 5;
+        }
+    } else if(castleKing && (pos->pceNum[bP] > 0)){
+        if(pos->pieces[F7] == bP){
+            pawnScore += 8;
+        }
+        if(pos->pieces[G7] == bP){
+            pawnScore += 12;
+        }
+        if(pos->pieces[H7] == EMPTY){
+            positionFeatures += 5; // King escape hole!
+        }
+        if(pos->pieces[H6] == bP){
+            pawnScore += 5;
+        }
+    }
+
+    // Fianchetto positions are OK alternatives
+    if(castleQueen && (pos->pieces[B7] == bB) && (pos->pieces[B6] == bP)){
+        positionFeatures += 12;
+    } else if(castleKing && (pos->pieces[G7] == bB) && (pos->pieces[G6] == bP)){
+        positionFeatures += 12;
+    }
+    kingSafety = castled + pawnScore + positionFeatures;
+    return kingSafety;
+}
+
+
 
 //#define ENDGAME_MAT (1 * PieceVal[wR] + 2 * PieceVal[wN] + 2 * PieceVal[wP] + PieceVal[wK])
 
@@ -373,6 +488,10 @@ int EvalPosition(S_BOARD *pos) {
         eval.tempo = -12;
     }
 
+    // Evaluate King Safety
+    eval.kingSafety[WHITE] = KingSafetyWhite(pos);
+    eval.kingSafety[BLACK] = KingSafetyBlack(pos);
+
     /*final_eval = eval.matScore + eval.tempo + (eval.pawns[WHITE] + eval.pawns[BLACK]) + (eval.knights[WHITE] + eval.knights[BLACK])
             + (eval.bishops[WHITE] + eval.bishops[BLACK]) + (eval.rooks[WHITE] + eval.rooks[BLACK])
             + (eval.queens[WHITE] + eval.queens[BLACK]) + (eval.kings[WHITE] + eval.kings[BLACK])
@@ -382,13 +501,13 @@ int EvalPosition(S_BOARD *pos) {
     eval_mg = eval.matScore + eval.tempo + (eval.pawns[WHITE] + eval.pawns[BLACK]) + (eval.knights[WHITE] + eval.knights[BLACK])
               + (eval.bishops[WHITE] + eval.bishops[BLACK]) + (eval.rooks[WHITE] + eval.rooks[BLACK])
               + (eval.queens[WHITE] + eval.queens[BLACK]) + (eval.kings[WHITE] + eval.kings[BLACK])
-              + (eval.pairs[WHITE] + eval.pairs[BLACK]);
+              + (eval.pairs[WHITE] + eval.pairs[BLACK]) + eval.kingSafety[WHITE] - eval.kingSafety[BLACK];
 
     // Calculate endgame eval total
     eval_eg = eval.matScore + eval.tempo + (eval.pawns[WHITE] + eval.pawns[BLACK]) + (eval.knights_eg[WHITE] + eval.knights_eg[BLACK])
               + (eval.bishops_eg[WHITE] + eval.bishops_eg[BLACK]) + (eval.rooks[WHITE] + eval.rooks[BLACK])
               + (eval.queens_eg[WHITE] + eval.queens_eg[BLACK]) + (eval.kings_eg[WHITE] + eval.kings_eg[BLACK])
-              + (eval.pairs[WHITE] + eval.pairs[BLACK]);
+              + (eval.pairs[WHITE] + eval.pairs[BLACK]) + eval.kingSafety[WHITE] - eval.kingSafety[BLACK];
 
     // Scale eval  by game phase
     final_eval = (eval_mg * (256 - eval.phase) + eval_eg * eval.phase) / 256;

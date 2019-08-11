@@ -395,12 +395,12 @@ int evalBlackKPK(S_BOARD *pos) {
     int pawnSq;
     int eval;
     int kpkResult;
-    int wkSq = SQ64(pos->KingSq[WHITE]);
-    int bkSq = SQ64(pos->KingSq[BLACK]);
+    int wkSq = SQ64(pos->KingSq[BLACK]);
+    int bkSq = SQ64(pos->KingSq[WHITE]);
     pawnSq = SQ64(pos->pList[bP][0]);
 
     kpkResult = kpkProbeBlack(pos->side, wkSq, pawnSq, bkSq);
-    eval = TBWIN + PieceVal[bP] + (8 - RanksBrd[pawnSq]);
+    eval = TBWIN + PieceVal[bP] + (8 - SQ120(RanksBrd[pawnSq]));
     return (kpkResult * eval);
 }
 
@@ -414,7 +414,7 @@ int evalWhiteKPK(S_BOARD *pos) {
     pawnSq = SQ64(pos->pList[wP][0]);
 
     kpkResult = kpkProbe(pos->side, wkSq, pawnSq, bkSq);
-    eval = TBWIN + PieceVal[wP] + (8 - RanksBrd[pawnSq]);
+    eval = TBWIN + PieceVal[wP] + (8 - SQ120(RanksBrd[pawnSq]));
     return (kpkResult * eval);
 }
 

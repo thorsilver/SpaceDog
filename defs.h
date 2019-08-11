@@ -208,6 +208,7 @@ typedef struct {
     int kings[2];
     int kings_eg[2];
     int pairs[2];
+    int kingSafety[2];
 } S_EVAL;
 
 /* GAME MOVE */
