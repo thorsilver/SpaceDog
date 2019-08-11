@@ -76,7 +76,7 @@ enum { white, black };
  |      Data                                                            |
  +----------------------------------------------------------------------*/
 
-uint64_t kpkTable[2][64*32];
+U64 kpkTable[2][64*32];
 static const int kingSteps[] = { N+W, N, N+E, W, E, S+W, S, S+E };
 
 // Drive enemy King towards the edge of the board
@@ -188,14 +188,14 @@ int kpkProbeBlack(int side, int wKing, int bPawn, int bKing) {
 
 int kpkGenerate(void)
 {
-    uint64_t valid[ arrayLen(kpkTable[0]) ];
+    U64 valid[ arrayLen(kpkTable[0]) ];
 
     for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
         int wKing = wKingSquare(ix), wPawn = wPawnSquare(ix);
 
         // Positions after winning pawn promotion (we can ignore stalemate here)
         if (rank(wPawn) == rank8 && wKing != wPawn) {
-            uint64_t lost = ~allKing(bit(wKing)) & ~bit(wKing) & ~bit(wPawn);
+            U64 lost = ~allKing(bit(wKing)) & ~bit(wKing) & ~bit(wPawn);
             if (dist(wKing, wPawn) > 1)
                 lost &= ~allKing(bit(wPawn));
             kpkTable[black][ix] = lost;
@@ -215,7 +215,7 @@ int kpkGenerate(void)
                 continue;
 
             // White king moves
-            uint64_t won = 0;
+            U64 won = 0;
             for (int i=0; i<arrayLen(kingSteps); i++) {
                 int to = wKing + kingSteps[i];
                 int jx = ix + kpIndex(kingSteps[i], 0);
@@ -238,10 +238,10 @@ int kpkGenerate(void)
                 continue;
 
             // Black king moves
-            uint64_t isBad = kpkTable[white][ix] | ~valid[ix];
-            uint64_t canDraw = allKing(~isBad);
-            uint64_t hasMoves = allKing(valid[ix]);
-            uint64_t lost = hasMoves & ~canDraw;
+            U64 isBad = kpkTable[white][ix] | ~valid[ix];
+            U64 canDraw = allKing(~isBad);
+            U64 hasMoves = allKing(valid[ix]);
+            U64 lost = hasMoves & ~canDraw;
 
             changed += (kpkTable[black][ix] != lost);
             kpkTable[black][ix] = lost;

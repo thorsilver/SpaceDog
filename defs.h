@@ -29,7 +29,7 @@ exit(1);}
 #endif
 
 typedef unsigned long long U64;
-//typedef uint64_t U64;
+//typedef U64 U64;
 
 #define NAME "SpaceDog 0.97.7"
 #define BRD_SQ_NUM 120
@@ -294,7 +294,7 @@ extern U64 WhitePassedMask[64];
 extern U64 IsolatedMask[64];
 
 extern S_OPTIONS EngineOptions[1];
-extern uint64_t kpkTable[2][64*32];
+extern U64 kpkTable[2][64*32];
 
 /* FUNCTIONS */
 
