@@ -351,8 +351,9 @@ char *printFEN(const S_BOARD *pos) {
             result[strIndex++] = 'a' + FilesBrd[pos->shortCastle960B];
     }
     // Check if pos->hisPly / 2 + 1 is the correct formula
+    int ply = (pos->hisPly <= 0) ? 1 : (pos->hisPly+1)/2;
     strIndex += sprintf(result + strIndex, " %s %d %d", printSquare(pos->enPas),
-                        pos->fiftyMove, (pos->hisPly + 1)/2);
+                        pos->fiftyMove, ply);
     ASSERT(strIndex < 256);
     return result;
 }
