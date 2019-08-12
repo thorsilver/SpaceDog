@@ -444,7 +444,7 @@ void InitTEX() {
     fclose(fp);
 };
 
-void NewTEX() {
+void NewTEX(const char *fen) {
     FILE *fp;
     fp=fopen(TEX_GAME_LOG, "a");
     if(fp == NULL)
@@ -461,6 +461,7 @@ void NewTEX() {
     fprintf(fp, "\\centering\n");
     fprintf(fp, "\\medskip\n\n");
     fprintf(fp, "\\newgame\n\n");
+    fprintf(fp, "\\fenboard{%s}\n\n", fen);
     fclose(fp);
 };
 
@@ -482,7 +483,7 @@ void NewWriteTEX(const char *fen, char *move, char *san, int ply) {
     fclose(fp);
 }
 
-void InitSummary() {
+void InitSummary(const char *fen) {
     FILE *fp;
     fp=fopen(SAN_SUMMARY, "a");
     if(fp == NULL)
@@ -507,6 +508,7 @@ void InitSummary() {
     fprintf(fp, "\\bigskip\n\n");
     fprintf(fp, "\\bigskip\n\n");
     fprintf(fp, "\\newchessgame\n\n");
+    fprintf(fp, "\\fenboard{%s}\n\n", fen);
     fprintf(fp, "\\mainline{");
     fclose(fp);
 };

@@ -352,7 +352,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
             printf("endsum - complete and close fancy summary in TeX\n");
             printf("usetb - use Syzygy tablebases (in folder \"syzygy\")\n");
             printf("setbook [filename] - use opening book [filename]\n");
-            printf("KPK Bitbase test - test generation and correctness of KPK bitbase\n");
+            printf("kpktest - test generation and correctness of KPK bitbase\n");
             printf("** note ** - to reset time and depth, set to 0\n");
             printf("*** frc [position number] - retrieve Chess960 position\n");
             printf("enter moves using b7b8q notation\n\n\n");
@@ -484,7 +484,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         };
 
         if(!strcmp(command, "newtex")) {
-            NewTEX();
+            NewTEX(printFEN(pos));
             EngineOptions->newTexLog = 1;
             continue;
         };
@@ -496,7 +496,7 @@ void Console_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
         };
 
         if(!strcmp(command, "startsum")) {
-            InitSummary();
+            InitSummary(printFEN(pos));
             EngineOptions->summary = 1;
             continue;
         };
